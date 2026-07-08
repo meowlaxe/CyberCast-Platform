@@ -1,0 +1,34 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>My Progress</h1>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5>Overall</h5>
+    <div class="cc-progress mb-1">
+      <div class="cc-progress-fill" style="width: {{ overall_pct }}%"></div>
+    </div>
+    <small class="text-muted">{{ total_done_all }}/{{ total_steps_all }} steps completed across all paths ({{ overall_pct }}%)</small>
+  </div>
+</div>
+
+{% for row in rows %}
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <span class="badge badge-info text-uppercase">{{ row.path.track }}</span>
+        <strong>{{ row.path.title }}</strong>
+      </div>
+      <a href="{{ url_for('learning_paths.learning_path_detail', slug=row.path.slug) }}" class="btn btn-outline-primary btn-sm">Continue</a>
+    </div>
+    <div class="cc-progress mt-2 mb-1">
+      <div class="cc-progress-fill" style="width: {{ row.pct }}%"></div>
+    </div>
+    <small class="text-muted">{{ row.done }}/{{ row.total }} step ({{ row.pct }}%)</small>
+  </div>
+</div>
+{% else %}
+<p>No learning paths to track yet.</p>
+{% endfor %}
+{% endblock %}

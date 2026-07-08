@@ -1,0 +1,430 @@
+/*
+ * CyberCollab theme reskin for CTFd
+ * -----------------------------------
+ * Token system (see README for rationale):
+ *   Background : #0B1120 (deep navy, not pure black)
+ *   Surface    : #131B2E
+ *   Accent 1   : #00D9C0  (teal - "connection" / primary actions)
+ *   Accent 2   : #FF8A3D  (amber - reward / bounty context only)
+ *   Text       : #E8ECF4 / muted #7C8AA5
+ *   Display font : "Space Grotesk"  |  Body: "Inter"  |  Data/mono: "JetBrains Mono"
+ *
+ * Approach: override Bootstrap 5 CSS custom properties that CTFd's core
+ * theme already uses, rather than fighting specificity everywhere.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root,
+[data-bs-theme="dark"] {
+  --bs-body-bg: #0B1120;
+  --bs-body-color: #E8ECF4;
+  --bs-secondary-color: #7C8AA5;
+  --bs-border-color: #223049;
+  --bs-primary: #00D9C0;
+  --bs-primary-rgb: 0, 217, 192;
+  --bs-link-color: #00D9C0;
+  --bs-link-hover-color: #4be8d4;
+
+  --cc-bg: #0B1120;
+  --cc-surface: #131B2E;
+  --cc-surface-hover: #182446;
+  --cc-accent: #00D9C0;
+  --cc-accent-soft: rgba(0, 217, 192, 0.12);
+  --cc-bounty: #FF8A3D;
+  --cc-bounty-soft: rgba(255, 138, 61, 0.12);
+  --cc-text: #E8ECF4;
+  --cc-muted: #7C8AA5;
+  --cc-border: #223049;
+}
+
+body {
+  background-color: var(--cc-bg) !important;
+  color: var(--cc-text);
+  font-family: "Inter", -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, h5, .navbar-brand {
+  font-family: "Space Grotesk", sans-serif !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Mono for anything data-like: flags, code, numbers, ids */
+code, pre, .font-monospace, input[name="flag"] {
+  font-family: "JetBrains Mono", monospace !important;
+}
+
+/* --- Navbar: subtle glass + bottom glow line ------------------------- */
+.navbar.bg-dark {
+  background-color: rgba(11, 17, 32, 0.85) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.navbar .nav-link {
+  color: var(--cc-muted) !important;
+  transition: color 0.15s ease;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: var(--cc-accent) !important;
+}
+/* Icon-only nav items (admin panel, notifications, profile, settings,
+   logout) must stay clearly visible - slightly brighter than plain text
+   links since they carry no label at some breakpoints. */
+.navbar .nav-link i.fas {
+  color: inherit;
+  opacity: 0.9;
+}
+.navbar .nav-link:hover i.fas {
+  opacity: 1;
+}
+
+/* Shared "Platform" dropdown (organizations/bounty/team-finder/learning-paths
+   all inject their link into this one menu instead of separate top-level
+   items, to keep the navbar from overflowing into two lines). */
+.navbar .dropdown-menu {
+  background-color: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+}
+.navbar .dropdown-item {
+  color: var(--cc-text);
+}
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: var(--cc-accent-soft);
+  color: var(--cc-accent);
+}
+
+/* --- Cards -------------------------------------------------------------
+   Signature restraint: a single glowing left border, not a full neon box,
+   keeps the boldness in one place instead of everywhere. */
+.card {
+  background-color: var(--cc-surface) !important;
+  border: 1px solid var(--cc-border) !important;
+  border-left: 3px solid var(--cc-accent) !important;
+  border-radius: 10px !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 217, 192, 0.08);
+  border-left-color: #4be8d4 !important;
+}
+
+/* Bounty-context cards get the amber accent instead of teal */
+.pp-bounty-card,
+[class*="bounty"] .card {
+  border-left-color: var(--cc-bounty) !important;
+}
+.pp-bounty-card:hover {
+  box-shadow: 0 8px 24px rgba(255, 138, 61, 0.1);
+  border-left-color: #ffa563 !important;
+}
+
+/* --- Buttons ------------------------------------------------------------ */
+.btn-primary {
+  background-color: var(--cc-accent) !important;
+  border-color: var(--cc-accent) !important;
+  color: #06131A !important;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background-color: #4be8d4 !important;
+  border-color: #4be8d4 !important;
+}
+.btn-outline-primary {
+  color: var(--cc-accent) !important;
+  border-color: var(--cc-accent) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--cc-accent-soft) !important;
+  color: var(--cc-accent) !important;
+}
+
+/* --- Badges -------------------------------------------------------------- */
+.badge.badge-success, .badge.bg-success { background-color: #1F8E72 !important; }
+.badge.badge-secondary, .badge.bg-secondary { background-color: var(--cc-border) !important; color: var(--cc-muted) !important; }
+.badge.badge-info, .badge.bg-info { background-color: var(--cc-accent-soft) !important; color: var(--cc-accent) !important; }
+.badge.badge-warning, .badge.bg-warning { background-color: var(--cc-bounty-soft) !important; color: var(--cc-bounty) !important; }
+
+/* --- Forms ---------------------------------------------------------------- */
+.form-control, .form-select, textarea {
+  background-color: var(--cc-bg) !important;
+  border: 1px solid var(--cc-border) !important;
+  color: var(--cc-text) !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--cc-accent) !important;
+  box-shadow: 0 0 0 3px var(--cc-accent-soft) !important;
+}
+
+/* --- Progress bars (used by Progress Tracking module) -------------------- */
+.cc-progress {
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--cc-border);
+  overflow: hidden;
+}
+.cc-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cc-accent), #4be8d4);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* --- Hero / signature network canvas -------------------------------------
+   Motion is restrained: a single ambient signature on the homepage hero,
+   quiet everywhere else. Respect reduced-motion. */
+.cc-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--cc-border);
+  padding: 72px 24px;
+  text-align: center;
+}
+#cc-network-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cc-network-canvas { display: none; }
+  .card { transition: none; }
+}
+
+/* --- Landing page hero content -------------------------------------------- */
+.cc-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.cc-hero-icon {
+  font-size: 2.75rem;
+  color: var(--cc-accent);
+  margin-bottom: 16px;
+}
+.cc-hero-title {
+  font-size: 2.75rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.cc-accent-text {
+  color: var(--cc-accent);
+}
+.cc-hero-subtitle {
+  color: var(--cc-muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.cc-hero-ctas {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cc-hero-ctas .btn-lg {
+  padding: 10px 28px;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* --- Feature cards grid ---------------------------------------------------- */
+.cc-features {
+  max-width: 1100px;
+  margin: 56px auto;
+  padding: 0 24px;
+  text-align: center;
+}
+.cc-features-title {
+  font-size: 1.75rem;
+  margin-bottom: 28px;
+}
+.cc-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  text-align: left;
+}
+.cc-feature-card {
+  display: block;
+  background-color: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-left: 3px solid var(--cc-accent);
+  border-radius: 10px;
+  padding: 20px;
+  text-decoration: none;
+  color: var(--cc-text);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.cc-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 217, 192, 0.08);
+  border-left-color: #4be8d4;
+  color: var(--cc-text);
+  text-decoration: none;
+}
+.cc-feature-card--bounty {
+  border-left-color: var(--cc-bounty);
+}
+.cc-feature-card--bounty:hover {
+  box-shadow: 0 8px 24px rgba(255, 138, 61, 0.1);
+  border-left-color: #ffa563;
+}
+.cc-feature-icon {
+  font-size: 1.5rem;
+  color: var(--cc-accent);
+  margin-bottom: 10px;
+}
+.cc-feature-card--bounty .cc-feature-icon {
+  color: var(--cc-bounty);
+}
+.cc-feature-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+.cc-feature-card p {
+  color: var(--cc-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+/* --- Filter sidebar layout (Learning Paths / Challenges style pages) ------ */
+.cc-filter-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 767px) {
+  .cc-filter-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.cc-filter-sidebar {
+  background-color: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: 10px;
+  padding: 18px;
+  position: sticky;
+  top: 80px;
+}
+.cc-filter-group {
+  margin-bottom: 20px;
+}
+.cc-filter-group:last-child {
+  margin-bottom: 0;
+}
+.cc-filter-heading {
+  color: var(--cc-accent);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.cc-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cc-filter-pill {
+  background: transparent;
+  border: 1px solid var(--cc-border);
+  color: var(--cc-muted);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cc-filter-pill:hover {
+  border-color: var(--cc-accent);
+  color: var(--cc-accent);
+}
+.cc-filter-pill.active {
+  background-color: var(--cc-accent);
+  border-color: var(--cc-accent);
+  color: #06131a;
+  font-weight: 600;
+}
+.cc-filter-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cc-filter-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--cc-muted);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+.cc-filter-check input {
+  accent-color: var(--cc-accent);
+}
+
+/* --- Path/challenge cards with status icon -------------------------------- */
+.cc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.cc-path-card {
+  display: block;
+  background-color: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-left: 3px solid var(--cc-accent);
+  border-radius: 10px;
+  padding: 18px;
+  text-decoration: none;
+  color: var(--cc-text);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.cc-path-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 217, 192, 0.08);
+  color: var(--cc-text);
+  text-decoration: none;
+}
+.cc-path-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.cc-path-card-header h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0;
+}
+.cc-status-icon--completed { color: #34D399; }
+.cc-status-icon--in-progress { color: var(--cc-accent); }
+.cc-status-icon--not-started { color: var(--cc-muted); }
+
+.cc-path-card-tags {
+  margin: 8px 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cc-badge-difficulty--beginner { background-color: rgba(52, 211, 153, 0.15); color: #34D399; }
+.cc-badge-difficulty--intermediate { background-color: var(--cc-bounty-soft); color: var(--cc-bounty); }
+.cc-badge-difficulty--advanced { background-color: rgba(248, 113, 113, 0.15); color: #F87171; }
+
+.cc-path-card-desc {
+  color: var(--cc-muted);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+.cc-path-card-progress {
+  margin-bottom: 12px;
+}
+.cc-status-badge--completed { background-color: rgba(52, 211, 153, 0.15); color: #34D399; }
+.cc-status-badge--in-progress { background-color: var(--cc-accent-soft); color: var(--cc-accent); }
+.cc-status-badge--not-started { background-color: var(--cc-border); color: var(--cc-muted); }

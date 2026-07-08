@@ -1,0 +1,40 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>{{ path.title }}</h1>
+<p class="text-muted">{{ path.track }} &middot; {{ path.difficulty }}</p>
+
+<h5>Current Steps</h5>
+<ol class="list-group list-group-numbered mb-4">
+  {% for step in path.steps %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>Challenge #{{ step.challenge_id }}{% if step.note %} &mdash; {{ step.note }}{% endif %}</span>
+    <form method="POST" action="{{ url_for('learning_paths.admin_learning_path_remove_step', step_id=step.id) }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+      <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+    </form>
+  </li>
+  {% else %}
+  <li class="list-group-item">No steps yet.</li>
+  {% endfor %}
+</ol>
+
+<h5>Add Step</h5>
+<form method="POST" action="{{ url_for('learning_paths.admin_learning_path_add_step', path_id=path.id) }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Select Challenge</label>
+    <select name="challenge_id" class="form-control" required>
+      {% for c in available %}
+      <option value="{{ c.id }}">[{{ c.category }}] {{ c.name }}</option>
+      {% else %}
+      <option disabled>All challenges are already in this path</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Note (optional - why this step matters)</label>
+    <input type="text" name="note" class="form-control" placeholder="e.g. warm-up before advanced SQLi">
+  </div>
+  <button type="submit" class="btn btn-primary">Add Step</button>
+</form>
+{% endblock %}

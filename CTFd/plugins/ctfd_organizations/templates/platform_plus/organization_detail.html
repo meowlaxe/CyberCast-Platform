@@ -1,0 +1,27 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1>{{ org.name }} {% if org.verified %}<span class="badge badge-success">Verified</span>{% endif %}</h1>
+  <form method="POST" action="{{ url_for('organizations.organization_join', slug=org.slug) }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+    <button type="submit" class="btn btn-primary">Join</button>
+  </form>
+</div>
+<span class="badge badge-secondary text-uppercase">{{ org.org_type }}</span>
+{% if org.website %}<p><a href="{{ org.website }}" target="_blank" rel="noopener">{{ org.website }}</a></p>{% endif %}
+<p>{{ org.description }}</p>
+
+<h4 class="mt-4">Members ({{ members|length }})</h4>
+<table class="table">
+  <thead><tr><th>Name</th><th>Role</th><th>Joined</th></tr></thead>
+  <tbody>
+    {% for membership, u in members %}
+    <tr>
+      <td>{{ u.name }}</td>
+      <td><span class="badge badge-info">{{ membership.role }}</span></td>
+      <td>{{ membership.joined_at.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap">
+  <div>
+    <h1>Learn <span class="cc-accent-text">Cybersecurity</span></h1>
+    <p class="text-muted">Guided learning paths and tutorials</p>
+  </div>
+  <a href="{{ url_for('learning_paths.progress_dashboard') }}" class="btn btn-outline-primary btn-sm">My Progress</a>
+</div>
+
+<div class="cc-filter-layout">
+  <aside class="cc-filter-sidebar">
+    <div class="cc-filter-group">
+      <h6 class="cc-filter-heading">Difficulty</h6>
+      <div class="cc-filter-pills" data-filter-group="difficulty">
+        <button type="button" class="cc-filter-pill active" data-value="all">All Difficulties</button>
+        <button type="button" class="cc-filter-pill" data-value="beginner">Beginner</button>
+        <button type="button" class="cc-filter-pill" data-value="intermediate">Intermediate</button>
+        <button type="button" class="cc-filter-pill" data-value="advanced">Advanced</button>
+      </div>
+    </div>
+
+    <div class="cc-filter-group">
+      <h6 class="cc-filter-heading">Track</h6>
+      <div class="cc-filter-checks" data-filter-group="track">
+        <label class="cc-filter-check"><input type="checkbox" value="all" checked> All Tracks</label>
+        <label class="cc-filter-check"><input type="checkbox" value="web"> Web Exploitation</label>
+        <label class="cc-filter-check"><input type="checkbox" value="pwn"> Binary Exploitation</label>
+        <label class="cc-filter-check"><input type="checkbox" value="crypto"> Cryptography</label>
+        <label class="cc-filter-check"><input type="checkbox" value="forensics"> Forensics</label>
+        <label class="cc-filter-check"><input type="checkbox" value="reverse"> Reverse Engineering</label>
+        <label class="cc-filter-check"><input type="checkbox" value="general"> General Skills</label>
+      </div>
+    </div>
+
+    <div class="cc-filter-group">
+      <h6 class="cc-filter-heading">Status</h6>
+      <div class="cc-filter-checks" data-filter-group="status">
+        <label class="cc-filter-check"><input type="checkbox" value="all" checked> All</label>
+        <label class="cc-filter-check"><input type="checkbox" value="completed"> Completed</label>
+        <label class="cc-filter-check"><input type="checkbox" value="in-progress"> In Progress</label>
+        <label class="cc-filter-check"><input type="checkbox" value="not-started"> Not Started</label>
+      </div>
+    </div>
+  </aside>
+
+  <div class="cc-filter-results">
+    <div class="cc-cards-grid" id="cc-learning-paths-grid">
+      {% for path in paths %}
+      {% set prog = progress_by_path[path.id] %}
+      {% if prog.pct == 100 %}{% set status = "completed" %}
+      {% elif prog.pct > 0 %}{% set status = "in-progress" %}
+      {% else %}{% set status = "not-started" %}
+      {% endif %}
+      <a href="{{ url_for('learning_paths.learning_path_detail', slug=path.slug) }}"
+         class="cc-path-card"
+         data-difficulty="{{ path.difficulty }}"
+         data-track="{{ path.track }}"
+         data-status="{{ status }}">
+        <div class="cc-path-card-header">
+          <h3>{{ path.title }}</h3>
+          <span class="cc-status-icon cc-status-icon--{{ status }}">
+            {% if status == "completed" %}<i class="fas fa-check-circle"></i>
+            {% elif status == "in-progress" %}<i class="fas fa-clock"></i>
+            {% else %}<i class="far fa-circle"></i>
+            {% endif %}
+          </span>
+        </div>
+        <div class="cc-path-card-tags">
+          <span class="badge cc-badge-difficulty--{{ path.difficulty }}">{{ path.difficulty|capitalize }}</span>
+          <span class="badge badge-secondary text-uppercase">{{ path.track }}</span>
+        </div>
+        <p class="cc-path-card-desc">{{ (path.description or "")[:100] }}{% if path.description and path.description|length > 100 %}...{% endif %}</p>
+
+        <div class="cc-path-card-progress">
+          <div class="d-flex justify-content-between">
+            <small class="text-muted">Progress</small>
+            <small class="text-muted">{{ prog.pct }}%</small>
+          </div>
+          <div class="cc-progress">
+            <div class="cc-progress-fill" style="width: {{ prog.pct }}%"></div>
+          </div>
+        </div>
+
+        <span class="badge cc-status-badge--{{ status }}">
+          {% if status == "completed" %}Completed
+          {% elif status == "in-progress" %}In Progress
+          {% else %}Not Started
+          {% endif %}
+        </span>
+      </a>
+      {% else %}
+      <p>No learning paths published yet.</p>
+      {% endfor %}
+    </div>
+    <p id="cc-no-results" class="text-muted" style="display:none;">No learning paths match the selected filters.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var grid = document.getElementById("cc-learning-paths-grid");
+  var noResults = document.getElementById("cc-no-results");
+  if (!grid) return;
+  var cards = Array.prototype.slice.call(grid.querySelectorAll(".cc-path-card"));
+
+  var difficultyPills = document.querySelectorAll('[data-filter-group="difficulty"] .cc-filter-pill');
+  var trackChecks = document.querySelectorAll('[data-filter-group="track"] input[type="checkbox"]');
+  var statusChecks = document.querySelectorAll('[data-filter-group="status"] input[type="checkbox"]');
+
+  function selectedValues(checks) {
+    var vals = Array.prototype.slice.call(checks)
+      .filter(function (c) { return c.checked && c.value !== "all"; })
+      .map(function (c) { return c.value; });
+    return vals;
+  }
+
+  function activeDifficulty() {
+    var active = document.querySelector('[data-filter-group="difficulty"] .cc-filter-pill.active');
+    return active ? active.dataset.value : "all";
+  }
+
+  function applyFilters() {
+    var difficulty = activeDifficulty();
+    var tracks = selectedValues(trackChecks);
+    var statuses = selectedValues(statusChecks);
+    var visibleCount = 0;
+
+    cards.forEach(function (card) {
+      var matchesDifficulty = difficulty === "all" || card.dataset.difficulty === difficulty;
+      var matchesTrack = tracks.length === 0 || tracks.indexOf(card.dataset.track) !== -1;
+      var matchesStatus = statuses.length === 0 || statuses.indexOf(card.dataset.status) !== -1;
+      var visible = matchesDifficulty && matchesTrack && matchesStatus;
+      card.style.display = visible ? "" : "none";
+      if (visible) visibleCount++;
+    });
+
+    noResults.style.display = visibleCount === 0 ? "" : "none";
+  }
+
+  difficultyPills.forEach(function (pill) {
+    pill.addEventListener("click", function () {
+      difficultyPills.forEach(function (p) { p.classList.remove("active"); });
+      pill.classList.add("active");
+      applyFilters();
+    });
+  });
+
+  function handleCheckboxGroup(checks) {
+    checks.forEach(function (check) {
+      check.addEventListener("change", function () {
+        if (check.value === "all" && check.checked) {
+          checks.forEach(function (c) { if (c !== check) c.checked = false; });
+        } else if (check.checked) {
+          var allBox = Array.prototype.slice.call(checks).find(function (c) { return c.value === "all"; });
+          if (allBox) allBox.checked = false;
+        }
+        var anyChecked = Array.prototype.slice.call(checks).some(function (c) { return c.checked; });
+        if (!anyChecked) {
+          var allBox2 = Array.prototype.slice.call(checks).find(function (c) { return c.value === "all"; });
+          if (allBox2) allBox2.checked = true;
+        }
+        applyFilters();
+      });
+    });
+  }
+  handleCheckboxGroup(trackChecks);
+  handleCheckboxGroup(statusChecks);
+})();
+</script>
+{% endblock %}

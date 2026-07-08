@@ -1,0 +1,43 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>New Bounty Program</h1>
+<form method="POST" action="{{ url_for('bounty.admin_bounty_new') }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Program Title</label>
+    <input type="text" name="title" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label>Company Name</label>
+    <input type="text" name="company_name" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" class="form-control" rows="4"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Scope (in / out of scope)</label>
+    <textarea name="scope" class="form-control" rows="4"></textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group col">
+      <label>Reward Min</label>
+      <input type="number" name="reward_min" class="form-control" value="0">
+    </div>
+    <div class="form-group col">
+      <label>Reward Max</label>
+      <input type="number" name="reward_max" class="form-control" value="0">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Status</label>
+    <select name="status" class="form-control">
+      <option value="draft">Draft</option>
+      <option value="active">Active</option>
+      <option value="paused">Paused</option>
+      <option value="closed">Closed</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{% endblock %}

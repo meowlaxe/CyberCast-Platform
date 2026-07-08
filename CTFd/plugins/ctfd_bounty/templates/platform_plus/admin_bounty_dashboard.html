@@ -1,0 +1,51 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Admin &mdash; Bounty Programs</h1>
+  <a class="btn btn-primary" href="{{ url_for('bounty.admin_bounty_new') }}">+ New Program</a>
+</div>
+
+{% for p in programs %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5>{{ p.title }} <span class="badge badge-secondary">{{ p.status }}</span></h5>
+    <h6 class="text-muted">{{ p.company_name }}</h6>
+
+    <h6 class="mt-3">Submissions ({{ p.submissions|length }})</h6>
+    <table class="table table-sm">
+      <thead><tr><th>Title</th><th>Reporter</th><th>Severity</th><th>Status</th><th>Reward</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for s in p.submissions %}
+        <tr>
+          <td>{{ s.title }}</td>
+          <td>User #{{ s.user_id }}</td>
+          <td>{{ s.severity }}</td>
+          <td>{{ s.status }}</td>
+          <td>{{ s.reward_amount }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('bounty.admin_bounty_update_submission', submission_id=s.id) }}" class="form-inline">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+              <select name="status" class="form-control form-control-sm mr-1">
+                <option value="pending" {{ 'selected' if s.status=='pending' }}>pending</option>
+                <option value="triaging" {{ 'selected' if s.status=='triaging' }}>triaging</option>
+                <option value="accepted" {{ 'selected' if s.status=='accepted' }}>accepted</option>
+                <option value="duplicate" {{ 'selected' if s.status=='duplicate' }}>duplicate</option>
+                <option value="rejected" {{ 'selected' if s.status=='rejected' }}>rejected</option>
+                <option value="paid" {{ 'selected' if s.status=='paid' }}>paid</option>
+              </select>
+              <input type="number" name="reward_amount" class="form-control form-control-sm mr-1" style="width:90px" value="{{ s.reward_amount }}">
+              <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No submissions yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<p>No bounty programs yet. Create the first one.</p>
+{% endfor %}
+{% endblock %}

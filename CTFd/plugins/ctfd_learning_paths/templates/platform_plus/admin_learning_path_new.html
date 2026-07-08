@@ -1,0 +1,39 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>New Learning Path</h1>
+<form method="POST" action="{{ url_for('learning_paths.admin_learning_path_new') }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Title</label>
+    <input type="text" name="title" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label>Track</label>
+    <select name="track" class="form-control">
+      <option value="general">General</option>
+      <option value="web">Web Exploitation</option>
+      <option value="pwn">Binary Exploitation (pwn)</option>
+      <option value="crypto">Cryptography</option>
+      <option value="forensics">Forensics</option>
+      <option value="reverse">Reverse Engineering</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Difficulty</label>
+    <select name="difficulty" class="form-control">
+      <option value="beginner">Beginner</option>
+      <option value="intermediate">Intermediate</option>
+      <option value="advanced">Advanced</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" class="form-control" rows="4"></textarea>
+  </div>
+  <div class="form-check mb-3">
+    <input type="checkbox" name="published" class="form-check-input" id="published">
+    <label class="form-check-label" for="published">Publish now (leave unchecked to save as draft)</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Create &amp; Continue to Add Steps</button>
+</form>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<span class="badge badge-info text-uppercase">{{ path.track }}</span>
+<span class="badge badge-secondary text-uppercase">{{ path.difficulty }}</span>
+<h1>{{ path.title }}</h1>
+<p>{{ path.description }}</p>
+
+<div class="cc-progress mb-1">
+  <div class="cc-progress-fill" style="width: {{ pct }}%"></div>
+</div>
+<p class="text-muted">{{ done }}/{{ total }} steps completed ({{ pct }}%)</p>
+
+<ol class="list-group list-group-numbered">
+  {% for item in steps %}
+  <li class="list-group-item d-flex justify-content-between align-items-start">
+    <div>
+      {% if item.challenge %}
+      <strong>{{ item.challenge.name }}</strong>
+      <span class="badge badge-secondary">{{ item.challenge.category }}</span>
+      {% else %}
+      <em class="text-muted">Challenge not found (it may have been deleted)</em>
+      {% endif %}
+      {% if item.step.note %}<div class="small text-muted">{{ item.step.note }}</div>{% endif %}
+    </div>
+    <span class="badge {{ 'badge-success' if item.solved else 'badge-secondary' }}">
+      {{ 'Completed' if item.solved else 'Not yet' }}
+    </span>
+  </li>
+  {% else %}
+  <li class="list-group-item">No steps in this path yet.</li>
+  {% endfor %}
+</ol>
+{% endblock %}

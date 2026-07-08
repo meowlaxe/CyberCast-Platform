@@ -1,0 +1,26 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Find a Team</h1>
+  <a class="btn btn-primary" href="{{ url_for('team_finder.team_finder_new') }}">+ Create Post</a>
+</div>
+<p class="text-muted">Find teammates, or offer your skills to a team that needs members.</p>
+
+{% for post in posts %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ post.title }}</h5>
+    <p class="mb-1"><strong>Looking for:</strong> {{ post.looking_for }}</p>
+    <p class="mb-1"><strong>Poster's skills:</strong> {{ post.skills }}</p>
+    <p class="card-text">{{ post.message }}</p>
+    <form method="POST" action="{{ url_for('team_finder.team_finder_interested', post_id=post.id) }}" class="form-inline">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+      <input type="text" name="note" class="form-control form-control-sm mr-2" placeholder="Short message (optional)">
+      <button type="submit" class="btn btn-sm btn-outline-primary">Interested</button>
+    </form>
+  </div>
+</div>
+{% else %}
+<p>No posts yet. Be the first to look for a team!</p>
+{% endfor %}
+{% endblock %}
