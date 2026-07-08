@@ -1,18 +1,16 @@
 # CyberCast
 
 <p align="center">
-  <img src="docs/assets/logo.png" width="180" alt="CyberCast Logo">
+  <img src="docs/assets/logo.png" alt="CyberCast Logo" width="180" />
 </p>
 
 <p align="center">
-A modern cybersecurity learning and Capture The Flag platform.
+  A modern cybersecurity learning and Capture The Flag platform.
 </p>
-
----
 
 ## Overview
 
-CyberCast is a cybersecurity learning platform built on top of CTFd and redesigned for long-term education, enterprise training, and collaborative learning.
+CyberCast is a modern cybersecurity learning platform built on top of CTFd and redesigned for long-term education, enterprise training, and collaborative learning.
 
 Unlike traditional CTF platforms that focus on single competitions, CyberCast provides structured learning paths, organization management, team collaboration, and enterprise-oriented cybersecurity training.
 
@@ -22,17 +20,17 @@ Unlike traditional CTF platforms that focus on single competitions, CyberCast pr
 - Organizations
 - Team Finder
 - Enterprise Bug Bounty
-- Modern CyberCast Theme
+- CyberCast Theme
 - Progress Tracking
 - Plugin-based Architecture
-- Team & Individual Competitions
+- Team and Individual Competitions
 - Dynamic Challenges
 - Custom Challenge Types
 - Docker Deployment
 
 ## Architecture
 
-```
+```text
 CyberCast
 │
 ├── Core Platform (CTFd)
@@ -53,26 +51,26 @@ CyberCast
 
 ## Installation
 
-Clone the repository
+Clone the repository.
 
 ```bash
-git clone https://github.com/<username>/CyberCast.git
+git clone https://github.com/meowlaxe/CyberCast-Platform.git
 cd CyberCast
 ```
 
-Install dependencies
+Install dependencies.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run locally
+Run locally.
 
 ```bash
 python serve.py
 ```
 
-Or with Docker
+Or run with Docker.
 
 ```bash
 docker compose up
@@ -108,6 +106,7 @@ CyberCast is built upon the open-source CTFd framework.
 Special thanks to the CTFd maintainers and contributors for providing the foundation that made this project possible.
 
 Original project:
+
 https://github.com/CTFd/CTFd
 
 ## License
