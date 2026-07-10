@@ -1,0 +1,24 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Payment History</h1>
+<div class="table-responsive">
+  <table class="table">
+    <thead><tr><th>Invoice</th><th>User</th><th>Provider</th><th>Event</th><th>Status</th><th>Amount</th><th>Created</th></tr></thead>
+    <tbody>
+      {% for payment in payments %}
+      <tr>
+        <td>{{ payment.invoice_id }}</td>
+        <td>{{ payment.user_id or "-" }}</td>
+        <td>{{ payment.provider }}</td>
+        <td>{{ payment.event_type }}</td>
+        <td>{{ payment.status }}</td>
+        <td>{{ payment.currency }} {{ "{:,}".format(payment.amount) }}</td>
+        <td>{{ payment.created_at }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No payment events yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

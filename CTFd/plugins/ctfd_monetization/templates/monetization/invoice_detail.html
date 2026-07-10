@@ -1,0 +1,14 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Invoice {{ invoice.invoice_number }}</h1>
+<div class="card">
+  <div class="card-body">
+    <p><strong>Purpose:</strong> {{ invoice.purpose }}</p>
+    <p><strong>Amount:</strong> {{ invoice.currency }} {{ "{:,}".format(invoice.amount) }}</p>
+    <p><strong>Status:</strong> <span class="badge badge-info">{{ invoice.status }}</span></p>
+    {% if invoice.status == "pending_payment" %}
+      <a href="{{ url_for('monetization.invoice_payment', invoice_id=invoice.id) }}" class="btn btn-primary">Continue Payment</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

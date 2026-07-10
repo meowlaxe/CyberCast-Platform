@@ -20,7 +20,9 @@ def load(app):
     register_plugin_assets_directory(
         app, base_path="/plugins/ctfd_cybercollab_theme/static/"
     )
-    register_plugin_stylesheet("/plugins/ctfd_cybercollab_theme/static/css/theme.css")
+    register_plugin_stylesheet(
+        "/plugins/ctfd_cybercollab_theme/static/css/theme.css?v=subscription-redesign"
+    )
     # Order matters: landing.js builds the hero markup (including the
     # canvas element), hero-network.js animates it. Both are homepage-only.
     register_plugin_script("/plugins/ctfd_cybercollab_theme/static/js/landing.js")

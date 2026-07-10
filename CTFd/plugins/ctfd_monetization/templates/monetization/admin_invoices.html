@@ -1,0 +1,33 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Invoice Management</h1>
+<div class="table-responsive">
+  <table class="table">
+    <thead><tr><th>Invoice</th><th>User</th><th>Program</th><th>Purpose</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.invoice_number }}</td>
+        <td>{{ invoice.user_id or "-" }}</td>
+        <td>{{ invoice.enterprise_program_id or "-" }}</td>
+        <td>{{ invoice.purpose }}</td>
+        <td>{{ invoice.currency }} {{ "{:,}".format(invoice.amount) }}</td>
+        <td>{{ invoice.status }}</td>
+        <td>
+          {% if invoice.status != "paid" %}
+          <form method="POST" action="{{ url_for('monetization.admin_invoice_mark_paid', invoice_id=invoice.id) }}">
+            <input type="hidden" name="nonce" value="{{ session.nonce }}">
+            <button type="submit" class="btn btn-sm btn-primary">Mark Paid</button>
+          </form>
+          {% else %}
+          <span class="text-muted">Paid</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No invoices yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

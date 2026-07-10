@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-bs-theme="dark">
 <head>
   <title>{{ title or Configs.ctf_name }}</title>
   <meta charset="utf-8">
@@ -13,8 +13,6 @@
   {% endblock %}
 
   {{ Plugins.styles }}
-
-  {{ Assets.js("assets/js/color_mode_switcher.js", type=None) }}
 
   <script type="text/javascript">
       window.init = {
@@ -49,13 +47,31 @@
 
 {% include "components/snackbar.html" %}
 
-<footer class="footer">
-  <div class="container text-center">
-    <a href="https://ctfd.io" class="text-secondary">
-      <small class="text-muted">
-        {% trans %}Powered by CTFd{% endtrans %}
-      </small>
-    </a>
+<footer class="footer cc-site-footer">
+  <div class="container">
+    <div class="cc-footer-inner">
+      <div class="cc-footer-brand">
+        <small>&copy; 2026 {{ Configs.ctf_name }}</small>
+        <span>Empowering hackers worldwide</span>
+      </div>
+
+      <nav class="cc-footer-links" aria-label="{% trans %}Footer navigation{% endtrans %}">
+        <a href="/about">{% trans %}About{% endtrans %}</a>
+        <a href="/terms">{% trans %}Terms{% endtrans %}</a>
+        <a href="/privacy">{% trans %}Privacy{% endtrans %}</a>
+        <a href="/contact">{% trans %}Contact{% endtrans %}</a>
+      </nav>
+
+      <div class="cc-footer-social">
+        <span>Connect:</span>
+        <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="mailto:admin@example.com" aria-label="Email"><i class="far fa-envelope"></i></a>
+      </div>
+    </div>
   </div>
 </footer>
 

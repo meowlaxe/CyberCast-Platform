@@ -6,7 +6,7 @@
 </div>
 
 <table class="table">
-  <thead><tr><th>Title</th><th>Track</th><th>Difficulty</th><th>Steps</th><th>Published</th><th></th></tr></thead>
+  <thead><tr><th>Title</th><th>Track</th><th>Difficulty</th><th>Steps</th><th>Access</th><th>Published</th><th></th></tr></thead>
   <tbody>
     {% for path in paths %}
     <tr>
@@ -14,11 +14,12 @@
       <td>{{ path.track }}</td>
       <td>{{ path.difficulty }}</td>
       <td>{{ path.steps|length }}</td>
+      <td>{% if path.is_premium %}<span class="badge badge-warning">Premium</span>{% else %}<span class="badge badge-secondary">Free</span>{% endif %}</td>
       <td>{% if path.published %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-secondary">Draft</span>{% endif %}</td>
       <td><a href="{{ url_for('learning_paths.admin_learning_path_edit', path_id=path.id) }}" class="btn btn-sm btn-outline-primary">Edit Steps</a></td>
     </tr>
     {% else %}
-    <tr><td colspan="6">No learning paths yet.</td></tr>
+    <tr><td colspan="7">No learning paths yet.</td></tr>
     {% endfor %}
   </tbody>
 </table>

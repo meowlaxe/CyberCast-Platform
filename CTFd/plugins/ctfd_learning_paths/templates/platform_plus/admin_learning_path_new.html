@@ -34,6 +34,14 @@
     <input type="checkbox" name="published" class="form-check-input" id="published">
     <label class="form-check-label" for="published">Publish now (leave unchecked to save as draft)</label>
   </div>
+  <div class="form-check mb-3">
+    <input type="checkbox" name="is_premium" class="form-check-input" id="is_premium">
+    <label class="form-check-label" for="is_premium">Premium path (requires student Premium access)</label>
+  </div>
+  <div class="form-check mb-3">
+    <input type="checkbox" name="certificate_enabled" class="form-check-input" id="certificate_enabled">
+    <label class="form-check-label" for="certificate_enabled">Premium certificate enabled</label>
+  </div>
   <button type="submit" class="btn btn-primary">Create &amp; Continue to Add Steps</button>
 </form>
 {% endblock %}

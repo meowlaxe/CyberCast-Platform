@@ -21,6 +21,8 @@ class LearningPaths(db.Model):
     description = db.Column(db.Text)
     difficulty = db.Column(db.String(16), default="beginner")
     published = db.Column(db.Boolean, default=False)
+    is_premium = db.Column(db.Boolean, default=False)
+    certificate_enabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
 
@@ -45,6 +47,8 @@ class LearningPathSteps(db.Model):
     )
     position = db.Column(db.Integer, nullable=False, default=0)
     note = db.Column(db.String(256))
+    is_premium = db.Column(db.Boolean, default=False)
+    lesson_type = db.Column(db.String(32), default="challenge")
 
     __table_args__ = (
         db.UniqueConstraint("path_id", "challenge_id", name="uq_path_challenge"),

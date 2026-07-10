@@ -11,6 +11,11 @@ from CTFd.models import db
 from CTFd.utils.decorators import admins_only, authed_only
 from CTFd.utils.user import get_current_user
 
+from CTFd.plugins.ctfd_monetization.services import (
+    can_publish_program,
+    create_enterprise_publish_invoice,
+)
+
 from .models import BountyPrograms, BountySubmissions
 
 bounty_bp = Blueprint(
@@ -108,12 +113,55 @@ def admin_bounty_new():
         scope=request.form.get("scope", "").strip(),
         reward_min=int(request.form.get("reward_min") or 0),
         reward_max=int(request.form.get("reward_max") or 0),
-        status=request.form.get("status", "draft"),
+        status="draft",
+        review_status="draft",
+        payment_status="invoice_required",
         created_by=user.id,
     )
     db.session.add(program)
     db.session.commit()
-    flash("Bounty program created.", "success")
+    flash("Bounty program created as draft. Generate an invoice before publishing.", "success")
+    return redirect(url_for("bounty.admin_bounty_dashboard"))
+
+
+@bounty_bp.route("/admin/bounty/<int:program_id>/review", methods=["POST"])
+@admins_only
+def admin_bounty_submit_review(program_id):
+    program = BountyPrograms.query.get_or_404(program_id)
+    program.review_status = "review"
+    program.status = "draft"
+    db.session.commit()
+    flash("Project moved to review.", "success")
+    return redirect(url_for("bounty.admin_bounty_dashboard"))
+
+
+@bounty_bp.route("/admin/bounty/<int:program_id>/invoice", methods=["POST"])
+@admins_only
+def admin_bounty_generate_invoice(program_id):
+    program = BountyPrograms.query.get_or_404(program_id)
+    invoice = create_enterprise_publish_invoice(program, user=get_current_user())
+    program.invoice_id = invoice.id
+    program.payment_status = invoice.status
+    program.review_status = "invoice_pending"
+    program.status = "draft"
+    db.session.commit()
+    flash("Enterprise publish invoice generated.", "success")
+    return redirect(url_for("monetization.invoice_detail", invoice_id=invoice.id))
+
+
+@bounty_bp.route("/admin/bounty/<int:program_id>/publish", methods=["POST"])
+@admins_only
+def admin_bounty_publish(program_id):
+    program = BountyPrograms.query.get_or_404(program_id)
+    if not can_publish_program(program):
+        flash("This project cannot be published until its invoice is paid.", "error")
+        return redirect(url_for("bounty.admin_bounty_dashboard"))
+
+    program.status = "active"
+    program.review_status = "published"
+    program.payment_status = "paid"
+    db.session.commit()
+    flash("Project published.", "success")
     return redirect(url_for("bounty.admin_bounty_dashboard"))
 
 

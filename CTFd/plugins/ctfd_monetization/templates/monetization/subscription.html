@@ -1,0 +1,192 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<section class="cc-subscription-page">
+  <div class="cc-subscription-hero">
+    <div class="cc-subscription-hero-copy">
+      <span class="cc-subscription-kicker">CyberCast Premium</span>
+      <h1>Unlock CyberCast Premium</h1>
+      <p>
+        Master cybersecurity with premium learning paths, industry-ready lessons,
+        certificates, progress analytics, and exclusive learning experiences built
+        for serious students.
+      </p>
+      <div class="cc-subscription-actions">
+        {% if subscription_status.is_premium %}
+          <a href="{{ url_for('learning_paths.learning_paths_list') }}" class="btn btn-primary">Continue Learning</a>
+        {% else %}
+          <form method="POST" action="{{ url_for('monetization.subscription_upgrade') }}">
+            <input type="hidden" name="nonce" value="{{ session.nonce }}">
+            <button type="submit" class="btn btn-primary">Upgrade to Premium</button>
+          </form>
+        {% endif %}
+        <a href="#premium-comparison" class="btn btn-outline-primary">Compare Plans</a>
+      </div>
+    </div>
+
+    <aside class="cc-current-plan-card" aria-label="Current plan">
+      <span>Current Plan</span>
+      <strong>{{ subscription_status.plan|upper }}</strong>
+      <small>{{ subscription_status.status|replace("_", " ")|title }}</small>
+      {% if subscription_status.is_premium %}
+        <div class="cc-plan-state cc-plan-state-active">
+          <i class="fas fa-check"></i>
+          Premium active
+        </div>
+      {% else %}
+        <div class="cc-plan-state">
+          <i class="fas fa-lock"></i>
+          Premium locked
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+
+  <section class="cc-subscription-section">
+    <div class="cc-section-heading">
+      <span>Why Premium</span>
+      <h2>More than access. A better learning loop.</h2>
+    </div>
+    <div class="cc-feature-grid">
+      <article class="cc-feature-card">
+        <i class="fas fa-route"></i>
+        <h3>Premium Learning Paths</h3>
+        <p>Structured tracks for deeper web, pwn, crypto, forensics, and real-world security skills.</p>
+      </article>
+      <article class="cc-feature-card">
+        <i class="fas fa-certificate"></i>
+        <h3>Premium Certificates</h3>
+        <p>Turn completed paths into portfolio-ready credentials for your next opportunity.</p>
+      </article>
+      <article class="cc-feature-card">
+        <i class="fas fa-chart-line"></i>
+        <h3>Progress Analytics</h3>
+        <p>Track consistency, completion, and growth across your CyberCast learning journey.</p>
+      </article>
+      <article class="cc-feature-card">
+        <i class="fas fa-play-circle"></i>
+        <h3>Continue Learning</h3>
+        <p>Keep momentum with guided next steps instead of wondering what to study next.</p>
+      </article>
+      <article class="cc-feature-card">
+        <i class="fas fa-briefcase"></i>
+        <h3>Portfolio Export</h3>
+        <p>Prepare a cleaner proof-of-learning story for organizations, teams, and projects.</p>
+      </article>
+      <article class="cc-feature-card">
+        <i class="fas fa-star"></i>
+        <h3>Future Exclusive Content</h3>
+        <p>Get access to upcoming premium modules and learning experiences as CyberCast grows.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="cc-subscription-section" id="premium-comparison">
+    <div class="cc-section-heading">
+      <span>Free vs Premium</span>
+      <h2>Public challenges stay free. Premium upgrades learning.</h2>
+    </div>
+    <div class="cc-plan-comparison">
+      <article class="cc-plan-card">
+        <div>
+          <span class="cc-plan-label">Free</span>
+          <h3>IDR 0</h3>
+          <p>For students who want to learn, compete, and join the community.</p>
+        </div>
+        <ul>
+          <li><i class="fas fa-check"></i> Public Challenges</li>
+          <li><i class="fas fa-check"></i> Free Learning Paths</li>
+          <li><i class="fas fa-check"></i> Community</li>
+          <li><i class="fas fa-check"></i> Organizations</li>
+          <li><i class="fas fa-check"></i> Team Finder</li>
+        </ul>
+      </article>
+
+      <article class="cc-plan-card cc-plan-card-premium">
+        <div>
+          <span class="cc-plan-label">Premium</span>
+          <h3>Everything Free, plus</h3>
+          <p>For students who want guided progression and proof of growth.</p>
+        </div>
+        <ul>
+          <li><i class="fas fa-check"></i> Premium Learning Paths</li>
+          <li><i class="fas fa-check"></i> Premium Certificates</li>
+          <li><i class="fas fa-check"></i> Progress Analytics</li>
+          <li><i class="fas fa-check"></i> Portfolio Export</li>
+          <li><i class="fas fa-check"></i> Priority Future Features</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="cc-subscription-section">
+    <div class="cc-section-heading">
+      <span>Pricing</span>
+      <h2>Choose the Premium path that fits your pace.</h2>
+    </div>
+    <div class="cc-pricing-grid">
+      <article class="cc-pricing-card">
+        <span>Monthly</span>
+        <h3>Rp49.000</h3>
+        <p>Start Premium and unlock guided learning immediately.</p>
+        {% if subscription_status.is_premium %}
+          <a href="{{ url_for('learning_paths.learning_paths_list') }}" class="btn btn-outline-primary w-100">Premium Active</a>
+        {% else %}
+          <form method="POST" action="{{ url_for('monetization.subscription_upgrade') }}">
+            <input type="hidden" name="nonce" value="{{ session.nonce }}">
+            <button type="submit" class="btn btn-primary w-100">Upgrade to Premium</button>
+          </form>
+        {% endif %}
+      </article>
+
+      <article class="cc-pricing-card cc-pricing-card-featured">
+        <div class="cc-save-badge">Save 15%</div>
+        <span>Yearly</span>
+        <h3>Rp499.000</h3>
+        <p>Commit to growth for a full year and keep your learning momentum.</p>
+        {% if subscription_status.is_premium %}
+          <a href="{{ url_for('learning_paths.learning_paths_list') }}" class="btn btn-outline-primary w-100">Premium Active</a>
+        {% else %}
+          <form method="POST" action="{{ url_for('monetization.subscription_upgrade') }}">
+            <input type="hidden" name="nonce" value="{{ session.nonce }}">
+            <button type="submit" class="btn btn-primary w-100">Upgrade to Premium</button>
+          </form>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+
+  <section class="cc-subscription-section">
+    <div class="cc-section-heading">
+      <span>FAQ</span>
+      <h2>Quick answers before you upgrade.</h2>
+    </div>
+    <div class="cc-faq-list">
+      <details>
+        <summary>What happens after I upgrade?</summary>
+        <p>Your account gets Premium access after the payment is confirmed by the system.</p>
+      </details>
+      <details>
+        <summary>Can I cancel anytime?</summary>
+        <p>Yes. The subscription structure is ready for plan management without changing free challenge access.</p>
+      </details>
+      <details>
+        <summary>Will my progress be saved?</summary>
+        <p>Yes. Your learning progress and activity stay connected to your CyberCast account.</p>
+      </details>
+      <details>
+        <summary>Do public challenges stay free?</summary>
+        <p>Yes. Premium only controls premium learning path access, not public challenges.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="cc-subscription-section cc-billing-section">
+    <div class="cc-section-heading">
+      <span>Billing</span>
+      <h2>Recent Billing History</h2>
+      <p>Billing history is here for reference. Your upgrade experience starts with learning value, not paperwork.</p>
+    </div>
+    {% include "monetization/_invoice_table.html" %}
+  </section>
+</section>
+{% endblock %}

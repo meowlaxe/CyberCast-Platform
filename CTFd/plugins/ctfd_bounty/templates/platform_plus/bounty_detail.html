@@ -3,6 +3,9 @@
 <h1>{{ program.title }}</h1>
 <h5 class="text-muted">{{ program.company_name }}</h5>
 <p><span class="badge badge-{{ 'success' if program.status == 'active' else 'secondary' }}">{{ program.status }}</span></p>
+{% if program.payment_status %}
+<p><span class="badge badge-info">{{ program.payment_status }}</span></p>
+{% endif %}
 
 <h6>Description</h6>
 <p>{{ program.description }}</p>

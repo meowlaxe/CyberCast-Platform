@@ -69,6 +69,9 @@
         <div class="cc-path-card-tags">
           <span class="badge cc-badge-difficulty--{{ path.difficulty }}">{{ path.difficulty|capitalize }}</span>
           <span class="badge badge-secondary text-uppercase">{{ path.track }}</span>
+          {% if path.is_premium %}
+          <span class="badge badge-warning">Premium</span>
+          {% endif %}
         </div>
         <p class="cc-path-card-desc">{{ (path.description or "")[:100] }}{% if path.description and path.description|length > 100 %}...{% endif %}</p>
 
@@ -88,6 +91,9 @@
           {% else %}Not Started
           {% endif %}
         </span>
+        {% if path.is_premium and not has_premium %}
+        <span class="badge badge-info ml-1">Upgrade required</span>
+        {% endif %}
       </a>
       {% else %}
       <p>No learning paths published yet.</p>

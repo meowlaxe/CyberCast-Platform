@@ -22,6 +22,9 @@ class BountyPrograms(db.Model):
     reward_max = db.Column(db.Integer, default=0)
     currency = db.Column(db.String(8), default="USD")
     status = db.Column(db.String(16), default="draft")  # draft|active|paused|closed
+    review_status = db.Column(db.String(32), default="draft")
+    payment_status = db.Column(db.String(32), default="invoice_required")
+    invoice_id = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
 

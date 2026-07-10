@@ -14,6 +14,7 @@ from CTFd.plugins import (
     register_plugin_assets_directory,
     register_plugin_script,
 )
+from CTFd.plugins.migrations import upgrade
 
 from .models import LearningPaths, LearningPathSteps  # noqa: F401
 from .routes import learning_paths_bp
@@ -21,6 +22,7 @@ from .routes import learning_paths_bp
 
 def load(app):
     app.db.create_all()
+    upgrade(plugin_name="ctfd_learning_paths")
     app.register_blueprint(learning_paths_bp)
 
     register_plugin_assets_directory(

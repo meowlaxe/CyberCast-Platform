@@ -11,6 +11,8 @@ from CTFd.models import Challenges, Solves, db
 from CTFd.utils.decorators import admins_only, authed_only
 from CTFd.utils.user import get_current_user
 
+from CTFd.plugins.ctfd_monetization.services import is_premium_user
+
 from .models import LearningPaths, LearningPathSteps
 
 learning_paths_bp = Blueprint(
@@ -65,6 +67,7 @@ def learning_paths_list():
         "platform_plus/learning_paths_list.html",
         paths=paths,
         progress_by_path=progress_by_path,
+        has_premium=is_premium_user(user),
     )
 
 
@@ -72,16 +75,23 @@ def learning_paths_list():
 def learning_path_detail(slug):
     path = LearningPaths.query.filter_by(slug=slug).first_or_404()
     user = get_current_user()
+    has_premium = is_premium_user(user)
+    if path.is_premium and not has_premium:
+        flash("This learning path is part of Premium.", "info")
+        return redirect(url_for("monetization.pricing"))
+
     solved_ids = _solved_challenge_ids(user)
 
     steps = []
     for step in path.steps:
         challenge = Challenges.query.get(step.challenge_id)
+        locked = (step.is_premium or path.is_premium) and not has_premium
         steps.append(
             {
                 "step": step,
                 "challenge": challenge,
                 "solved": step.challenge_id in solved_ids,
+                "locked": locked,
             }
         )
 
@@ -96,12 +106,17 @@ def learning_path_detail(slug):
         done=done,
         total=total,
         pct=pct,
+        has_premium=has_premium,
     )
 
 
 @learning_paths_bp.route("/progress")
 @authed_only
 def progress_dashboard():
+    if not is_premium_user():
+        flash("Progress analytics are available with Premium.", "info")
+        return redirect(url_for("monetization.pricing"))
+
     user = get_current_user()
     solved_ids = _solved_challenge_ids(user)
 
@@ -168,6 +183,8 @@ def admin_learning_path_new():
         description=request.form.get("description", "").strip(),
         difficulty=request.form.get("difficulty", "beginner"),
         published=bool(request.form.get("published")),
+        is_premium=bool(request.form.get("is_premium")),
+        certificate_enabled=bool(request.form.get("certificate_enabled")),
         created_by=user.id,
     )
     db.session.add(path)
@@ -193,6 +210,20 @@ def admin_learning_path_edit(path_id):
 
 
 @learning_paths_bp.route(
+    "/admin/learning-paths/<int:path_id>/settings", methods=["POST"]
+)
+@admins_only
+def admin_learning_path_update_settings(path_id):
+    path = LearningPaths.query.get_or_404(path_id)
+    path.is_premium = bool(request.form.get("is_premium"))
+    path.certificate_enabled = bool(request.form.get("certificate_enabled"))
+    path.published = bool(request.form.get("published"))
+    db.session.commit()
+    flash("Learning path settings updated.", "success")
+    return redirect(url_for("learning_paths.admin_learning_path_edit", path_id=path.id))
+
+
+@learning_paths_bp.route(
     "/admin/learning-paths/<int:path_id>/add-step", methods=["POST"]
 )
 @admins_only
@@ -206,6 +237,8 @@ def admin_learning_path_add_step(path_id):
         challenge_id=challenge_id,
         position=next_position,
         note=request.form.get("note", "").strip(),
+        is_premium=bool(request.form.get("is_premium")),
+        lesson_type=request.form.get("lesson_type", "challenge"),
     )
     db.session.add(step)
     db.session.commit()

@@ -2,6 +2,8 @@
 {% block pp_content %}
 <span class="badge badge-info text-uppercase">{{ path.track }}</span>
 <span class="badge badge-secondary text-uppercase">{{ path.difficulty }}</span>
+{% if path.is_premium %}<span class="badge badge-warning">Premium</span>{% endif %}
+{% if path.certificate_enabled %}<span class="badge badge-info">Certificate</span>{% endif %}
 <h1>{{ path.title }}</h1>
 <p>{{ path.description }}</p>
 
@@ -21,10 +23,16 @@
       <em class="text-muted">Challenge not found (it may have been deleted)</em>
       {% endif %}
       {% if item.step.note %}<div class="small text-muted">{{ item.step.note }}</div>{% endif %}
+      {% if item.step.is_premium %}<span class="badge badge-warning">Premium Step</span>{% endif %}
+      {% if item.step.lesson_type %}<span class="badge badge-secondary">{{ item.step.lesson_type }}</span>{% endif %}
     </div>
+    {% if item.locked %}
+    <a href="{{ url_for('monetization.pricing') }}" class="badge badge-warning">Upgrade</a>
+    {% else %}
     <span class="badge {{ 'badge-success' if item.solved else 'badge-secondary' }}">
       {{ 'Completed' if item.solved else 'Not yet' }}
     </span>
+    {% endif %}
   </li>
   {% else %}
   <li class="list-group-item">No steps in this path yet.</li>

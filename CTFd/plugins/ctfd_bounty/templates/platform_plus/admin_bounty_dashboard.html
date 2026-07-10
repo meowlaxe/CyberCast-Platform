@@ -8,8 +8,38 @@
 {% for p in programs %}
 <div class="card mb-3">
   <div class="card-body">
-    <h5>{{ p.title }} <span class="badge badge-secondary">{{ p.status }}</span></h5>
+    <h5>
+      {{ p.title }}
+      <span class="badge badge-secondary">{{ p.status }}</span>
+      <span class="badge badge-info">{{ p.review_status or "draft" }}</span>
+      <span class="badge badge-warning">{{ p.payment_status or "invoice_required" }}</span>
+    </h5>
     <h6 class="text-muted">{{ p.company_name }}</h6>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% if p.review_status in [None, "draft"] %}
+      <form method="POST" action="{{ url_for('bounty.admin_bounty_submit_review', program_id=p.id) }}">
+        <input type="hidden" name="nonce" value="{{ session.nonce }}">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Move to Review</button>
+      </form>
+      {% endif %}
+
+      {% if p.payment_status != "paid" %}
+      <form method="POST" action="{{ url_for('bounty.admin_bounty_generate_invoice', program_id=p.id) }}">
+        <input type="hidden" name="nonce" value="{{ session.nonce }}">
+        <button type="submit" class="btn btn-sm btn-primary">Generate Invoice</button>
+      </form>
+      {% elif p.status != "active" %}
+      <form method="POST" action="{{ url_for('bounty.admin_bounty_publish', program_id=p.id) }}">
+        <input type="hidden" name="nonce" value="{{ session.nonce }}">
+        <button type="submit" class="btn btn-sm btn-success">Publish Project</button>
+      </form>
+      {% endif %}
+
+      {% if p.invoice_id %}
+      <a href="{{ url_for('monetization.invoice_detail', invoice_id=p.invoice_id) }}" class="btn btn-sm btn-outline-primary">View Invoice</a>
+      {% endif %}
+    </div>
 
     <h6 class="mt-3">Submissions ({{ p.submissions|length }})</h6>
     <table class="table table-sm">

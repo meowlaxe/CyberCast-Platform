@@ -1,0 +1,57 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap mb-4">
+  <div>
+    <h1>Pricing</h1>
+    <p class="text-muted mb-0">Challenges, leaderboard, organizations, and industry project applications stay free.</p>
+  </div>
+  {% if authed() %}
+  <a href="{{ url_for('monetization.subscription') }}" class="btn btn-outline-primary">Manage Subscription</a>
+  {% endif %}
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h3>Free</h3>
+        <p class="text-muted">For every student learning and competing.</p>
+        <h2>IDR 0</h2>
+        <ul>
+          <li>All public challenges</li>
+          <li>Leaderboard access</li>
+          <li>Join organizations</li>
+          <li>Apply to industry projects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h3>Premium</h3>
+        <p class="text-muted">For guided learning and deeper progress tracking.</p>
+        <h2>IDR 99,000 <small class="text-muted">/ month</small></h2>
+        <ul>
+          <li>Premium learning paths</li>
+          <li>Premium lessons and modules</li>
+          <li>Premium certificates</li>
+          <li>Progress analytics</li>
+        </ul>
+        {% if authed() %}
+          {% if subscription_status.is_premium %}
+            <a href="{{ url_for('monetization.subscription') }}" class="btn btn-outline-primary w-100">Premium Active</a>
+          {% else %}
+            <form method="POST" action="{{ url_for('monetization.subscription_upgrade') }}">
+              <input type="hidden" name="nonce" value="{{ session.nonce }}">
+              <button type="submit" class="btn btn-primary w-100">Upgrade to Premium</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100">Login to Upgrade</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

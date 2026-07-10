@@ -1,24 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="jumbotron">
+  <div class="cc-page-hero cc-challenges-hero">
     <div class="container">
-      <h1>
-        {% trans %}Challenges{% endtrans %}
-      </h1>
+      <h1>{% trans %}Challenges{% endtrans %}</h1>
+      <p>{% trans %}Solve challenges, earn points, and climb the leaderboard{% endtrans %}</p>
     </div>
   </div>
 
-  <div class="container">
+  <div class="container cc-challenges-container">
     <div class="row">
       <div class="col-md-12">
         {% include "components/errors.html" %}
       </div>
     </div>
 
-    <div 
-      x-data="ChallengeBoard" 
-      @load-challenges.window="loadChallenges()" 
+    <div
+      x-data="ChallengeBoard"
+      @load-challenges.window="loadChallenges()"
       @load-challenge.window="loadChallenge($event.detail)"
     >
       <div
@@ -34,37 +33,82 @@
         </div>
       </div>
 
-      <div x-show="loaded">
-        <template x-for="(category, idx) in getCategories()" :key="idx">
-          <div class="pt-5">
-            <div class="category-header mb-3">
-              <h3 x-text="category"></h3>
+      <div x-show="loaded" class="cc-challenge-shell">
+        <aside class="cc-challenge-filters" aria-label="{% trans %}Challenge filters{% endtrans %}">
+          <div class="cc-filter-section">
+            <h2>{% trans %}Visibility{% endtrans %}</h2>
+            <label><input type="checkbox"> <span>{% trans %}Hide Solved{% endtrans %}</span></label>
+            <label><input type="checkbox"> <span>{% trans %}Show Marked{% endtrans %}</span></label>
+            <label><input type="checkbox"> <span>{% trans %}Show Retired{% endtrans %}</span></label>
+          </div>
+
+          <div class="cc-filter-section">
+            <h2>{% trans %}Difficulty{% endtrans %}</h2>
+            <div class="cc-filter-pills">
+              <button type="button" class="cc-filter-pill active">{% trans %}All Difficulties{% endtrans %}</button>
+              <button type="button" class="cc-filter-pill">{% trans %}Easy{% endtrans %}</button>
+              <button type="button" class="cc-filter-pill">{% trans %}Medium{% endtrans %}</button>
+              <button type="button" class="cc-filter-pill">{% trans %}Hard{% endtrans %}</button>
+              <button type="button" class="cc-filter-pill">{% trans %}Extreme{% endtrans %}</button>
             </div>
+          </div>
 
-            <div class="category-challenges d-flex flex-column">
-              <div class="challenges-row row">
+          <div class="cc-filter-section">
+            <h2>{% trans %}Category{% endtrans %}</h2>
+            <label><input type="checkbox" checked> <span>{% trans %}All Categories{% endtrans %}</span></label>
+            <template x-for="category in getCategories()" :key="category">
+              <label><input type="checkbox"> <span x-text="category"></span></label>
+            </template>
+          </div>
+        </aside>
+
+        <section class="cc-challenge-board">
+          <template x-for="(category, idx) in getCategories()" :key="idx">
+            <div class="cc-category-block">
+              <div class="cc-category-header">
+                <h2 x-text="category"></h2>
+                <span>
+                  <span x-text="getChallenges(category).length"></span>
+                  {% trans %}challenges{% endtrans %}
+                </span>
+              </div>
+
+              <div class="cc-challenge-grid">
                 <template x-for="(c, idx) in getChallenges(category)" :key="c.id">
-                  <div class="col-sm-6 col-md-4 col-lg-3 my-3">
-                    <button
-                        class="challenge-button btn btn-dark w-100 h-100"
-                        :class="[
-                          c.solved_by_me ? 'challenge-solved' : '',
-                          ...c.tags.map((tag) => `tag-${tag.value.replace(/ /g, '-')}`),
-                        ];"
-                        :value="c.id" @click="loadChallenge(c.id)"
-                    >
+                  <button
+                      class="challenge-button cc-challenge-card"
+                      :class="[
+                        c.solved_by_me ? 'challenge-solved' : '',
+                        ...c.tags.map((tag) => `tag-${tag.value.replace(/ /g, '-')}`),
+                      ];"
+                      :value="c.id" @click="loadChallenge(c.id)"
+                  >
+                    <div class="cc-challenge-card-top">
+                      <h3 x-text="c.name"></h3>
+                      <i class="far fa-flag"></i>
+                    </div>
 
-                      <div class="challenge-inner my-3">
-                        <p x-text="c.name"></p>
-                        <span x-text="c.value"></span>
-                      </div>
-                    </button>
-                  </div>
+                    <div class="cc-challenge-tags">
+                      <span class="cc-difficulty-pill" x-text="c.solved_by_me ? '{% trans %}Solved{% endtrans %}' : '{% trans %}Active{% endtrans %}'"></span>
+                      <template x-for="tag in c.tags.slice(0, 2)" :key="tag.value">
+                        <span x-text="tag.value"></span>
+                      </template>
+                    </div>
+
+                    <div class="cc-challenge-meta">
+                      <span><i class="fas fa-trophy"></i> {% trans %}Points{% endtrans %}</span>
+                      <strong x-text="c.value"></strong>
+                    </div>
+
+                    <div class="cc-challenge-action">
+                      <span x-text="c.solved_by_me ? '{% trans %}Review Challenge{% endtrans %}' : '{% trans %}Solve Challenge{% endtrans %}'"></span>
+                    </div>
+                  </button>
                 </template>
               </div>
             </div>
-          </div>
-        </template>
+          </template>
+        </section>
       </div>
     </div>
   </div>

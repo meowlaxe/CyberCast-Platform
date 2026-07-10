@@ -54,46 +54,479 @@ code, pre, .font-monospace, input[name="flag"] {
   font-family: "JetBrains Mono", monospace !important;
 }
 
-/* --- Navbar: subtle glass + bottom glow line ------------------------- */
+/* --- Navbar: compact product shell inspired by the Figma reference ------ */
 .navbar.bg-dark {
-  background-color: rgba(11, 17, 32, 0.85) !important;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--cc-border);
+  min-height: 54px;
+  background-color: rgba(4, 8, 18, 0.94) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 217, 192, 0.14);
+  box-shadow: none;
+}
+
+.navbar .container {
+  max-width: 1180px;
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  margin-right: 0;
+  color: var(--cc-text) !important;
+  font-size: 0.94rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.navbar-brand .ctf_logo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f7fbff;
+  padding: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 217, 192, 0.22), 0 0 18px rgba(0, 217, 192, 0.08);
+}
+
+.cc-navbar-brand-text {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.navbar .navbar-collapse {
+  min-width: 0;
+}
+
+.navbar .navbar-nav {
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar .nav-item {
+  display: flex;
+  align-items: center;
 }
 
 .navbar .nav-link {
-  color: var(--cc-muted) !important;
-  transition: color 0.15s ease;
-}
-.navbar .nav-link:hover,
-.navbar .nav-link.active {
-  color: var(--cc-accent) !important;
-}
-/* Icon-only nav items (admin panel, notifications, profile, settings,
-   logout) must stay clearly visible - slightly brighter than plain text
-   links since they carry no label at some breakpoints. */
-.navbar .nav-link i.fas {
-  color: inherit;
-  opacity: 0.9;
-}
-.navbar .nav-link:hover i.fas {
-  opacity: 1;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 12px !important;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #9aa8c4 !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
 }
 
-/* Shared "Platform" dropdown (organizations/bounty/team-finder/learning-paths
-   all inject their link into this one menu instead of separate top-level
-   items, to keep the navbar from overflowing into two lines). */
-.navbar .dropdown-menu {
-  background-color: var(--cc-surface);
-  border: 1px solid var(--cc-border);
+.navbar .nav-link:hover,
+.navbar .nav-link:focus-visible {
+  background-color: rgba(255, 255, 255, 0.045);
+  border-color: rgba(0, 217, 192, 0.22);
+  color: var(--cc-text) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
-.navbar .dropdown-item {
+
+.navbar .nav-link:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(0, 217, 192, 0.22);
+}
+
+.navbar .nav-link.active,
+.navbar .nav-link[aria-current="page"],
+.navbar .dropdown-toggle.show {
+  background-color: rgba(0, 217, 192, 0.1);
+  border-color: rgba(0, 217, 192, 0.34);
+  color: var(--cc-accent) !important;
+}
+
+.navbar .nav-link i.fas {
+  color: inherit;
+  font-size: 0.93rem;
+  opacity: 0.95;
+}
+
+.navbar .dropdown-toggle::after {
+  margin-left: 2px;
+  border-top-color: currentColor;
+  transform: translateY(1px);
+}
+
+.cc-navbar-actions {
+  gap: 12px !important;
+}
+
+.cc-navbar-actions .nav-link {
+  min-width: 38px;
+}
+
+.cc-register-link {
+  background: linear-gradient(135deg, var(--cc-accent), #17f3dc);
+  border-color: transparent;
+  color: #031014 !important;
+  min-height: 36px !important;
+  padding: 9px 18px !important;
+  box-shadow: 0 10px 24px rgba(0, 217, 192, 0.16);
+}
+
+.cc-register-link:hover,
+.cc-register-link:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 217, 192, 0.28);
+}
+
+.cc-login-link {
+  border-color: rgba(154, 168, 196, 0.2);
+  background-color: rgba(255, 255, 255, 0.025);
+  padding-inline: 17px !important;
+}
+
+.cc-nav-icon-link {
+  width: 38px;
+  padding-inline: 0 !important;
+}
+
+.cc-nav-icon-link .badge-notification {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 3px 5px;
+  border: 2px solid rgba(4, 8, 18, 0.98);
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.cc-profile-toggle {
+  min-height: 38px !important;
+  padding: 4px 9px 4px 5px !important;
+}
+
+.cc-profile-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(0, 217, 192, 0.2), rgba(124, 138, 165, 0.12));
+  border: 1px solid rgba(0, 217, 192, 0.34);
   color: var(--cc-text);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
+
+.cc-profile-menu {
+  min-width: 230px !important;
+}
+
+.navbar .nav-item.dropdown > button.nav-link {
+  background-color: transparent;
+}
+
+.navbar-toggler {
+  border-color: rgba(0, 217, 192, 0.28) !important;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(0, 217, 192, 0.18);
+}
+
+@media (min-width: 992px) {
+  .cc-site-navbar .container {
+    display: grid !important;
+    grid-template-columns: minmax(168px, 1fr) auto minmax(168px, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
+
+  .cc-site-navbar .navbar-collapse {
+    display: contents !important;
+  }
+
+  .cc-navbar-main {
+    justify-self: center;
+    margin: 0 !important;
+  }
+
+  .cc-navbar-actions {
+    justify-self: end;
+    margin: 0 !important;
+  }
+}
+
+/* Dropdown shell for compact IA groups such as Community and Profile. */
+.navbar .dropdown-menu {
+  min-width: 228px;
+  margin-top: 12px;
+  padding: 8px;
+  background-color: rgba(12, 18, 34, 0.98);
+  border: 1px solid rgba(0, 217, 192, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.025);
+}
+
+.navbar .dropdown-item {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  color: #d7deec;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
 .navbar .dropdown-item:hover,
 .navbar .dropdown-item:focus {
   background-color: var(--cc-accent-soft);
   color: var(--cc-accent);
+  transform: translateX(2px);
+}
+
+.navbar .dropdown-item.bg-primary,
+.navbar .dropdown-item.active {
+  background-color: var(--cc-accent) !important;
+  color: #031014 !important;
+}
+
+.navbar .dropdown-item.disabled,
+.navbar .dropdown-item:disabled {
+  color: rgba(124, 138, 165, 0.72);
+  opacity: 1;
+  transform: none;
+}
+
+.navbar .dropdown-divider {
+  border-color: rgba(124, 138, 165, 0.2);
+}
+
+@media (max-width: 991.98px) {
+  .navbar.bg-dark {
+    min-height: 60px;
+  }
+
+  .navbar .navbar-collapse {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: rgba(12, 18, 34, 0.98);
+    border: 1px solid rgba(0, 217, 192, 0.14);
+    border-radius: 8px;
+  }
+
+  .navbar .navbar-nav {
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  .navbar .nav-item,
+  .navbar .nav-link {
+    width: 100%;
+  }
+
+  .navbar .nav-link {
+    justify-content: flex-start;
+    min-height: 42px;
+    padding-inline: 14px !important;
+  }
+
+  .cc-navbar-actions {
+    gap: 8px !important;
+  }
+
+  .cc-navbar-actions .nav-item {
+    width: 100%;
+  }
+
+  .cc-login-link,
+  .cc-register-link,
+  .cc-profile-toggle {
+    justify-content: center !important;
+  }
+
+  .cc-nav-icon-link {
+    width: 100%;
+    gap: 9px;
+  }
+
+  .cc-nav-icon-link .badge-notification {
+    top: 8px;
+    right: 10px;
+  }
+
+  .cc-profile-toggle {
+    padding: 7px 14px !important;
+  }
+
+  .cc-profile-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .navbar .dropdown-menu {
+    width: 100%;
+    margin: 6px 0 2px;
+    box-shadow: none;
+  }
+}
+
+/* --- Footer: three-column site footer matching the supplied layout -------- */
+main {
+  margin-bottom: 132px;
+}
+
+.footer.cc-site-footer {
+  position: absolute;
+  bottom: 0;
+  z-index: 0;
+  height: auto;
+  min-height: 104px;
+  line-height: 1.4;
+  padding: 22px 0 18px;
+  background-color: rgba(4, 8, 18, 0.96);
+  border-top: 1px solid rgba(0, 217, 192, 0.14);
+}
+
+.cc-site-footer .container {
+  max-width: 1180px;
+}
+
+.cc-footer-inner {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+  align-items: center;
+  gap: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(124, 138, 165, 0.28);
+}
+
+.cc-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.cc-footer-brand small {
+  color: var(--cc-text);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+}
+
+.cc-footer-brand span,
+.cc-footer-social span {
+  color: var(--cc-muted);
+  font-size: 0.74rem;
+}
+
+.cc-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.cc-footer-links a {
+  color: var(--cc-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cc-footer-links a + a::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-right: 14px;
+  border-radius: 999px;
+  background-color: var(--cc-muted);
+  vertical-align: middle;
+  opacity: 0.75;
+}
+
+.cc-footer-links a:hover,
+.cc-footer-links a:focus-visible,
+.cc-footer-social a:hover,
+.cc-footer-social a:focus-visible {
+  color: var(--cc-accent);
+}
+
+.cc-footer-social {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.cc-footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--cc-muted);
+  text-decoration: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.cc-footer-social a:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 991.98px) {
+  main {
+    margin-bottom: 190px;
+  }
+
+  .cc-footer-inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .cc-footer-social {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  main {
+    margin-bottom: 230px;
+  }
+
+  .cc-footer-links {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .cc-footer-links a + a::before {
+    display: none;
+  }
+
+  .cc-footer-social {
+    flex-wrap: wrap;
+  }
 }
 
 /* --- Cards -------------------------------------------------------------
@@ -123,23 +556,55 @@ code, pre, .font-monospace, input[name="flag"] {
 }
 
 /* --- Buttons ------------------------------------------------------------ */
+.btn {
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 217, 192, 0.22) !important;
+}
+
 .btn-primary {
-  background-color: var(--cc-accent) !important;
-  border-color: var(--cc-accent) !important;
-  color: #06131A !important;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--cc-accent), #18f0d9) !important;
+  border-color: transparent !important;
+  color: #031014 !important;
+  box-shadow: 0 10px 24px rgba(0, 217, 192, 0.18);
 }
+
 .btn-primary:hover {
-  background-color: #4be8d4 !important;
-  border-color: #4be8d4 !important;
+  background: linear-gradient(135deg, #36f5df, #7bfff0) !important;
+  border-color: transparent !important;
+  box-shadow: 0 14px 30px rgba(0, 217, 192, 0.26);
 }
+
 .btn-outline-primary {
+  background-color: rgba(0, 217, 192, 0.03) !important;
   color: var(--cc-accent) !important;
-  border-color: var(--cc-accent) !important;
+  border-color: rgba(0, 217, 192, 0.78) !important;
 }
+
 .btn-outline-primary:hover {
   background-color: var(--cc-accent-soft) !important;
-  color: var(--cc-accent) !important;
+  border-color: var(--cc-accent) !important;
+  color: #7bfff0 !important;
+  box-shadow: 0 10px 24px rgba(0, 217, 192, 0.12);
+}
+
+.btn-secondary,
+.btn-outline-secondary {
+  border-color: rgba(154, 168, 196, 0.24) !important;
 }
 
 /* --- Badges -------------------------------------------------------------- */
@@ -428,3 +893,753 @@ code, pre, .font-monospace, input[name="flag"] {
 .cc-status-badge--completed { background-color: rgba(52, 211, 153, 0.15); color: #34D399; }
 .cc-status-badge--in-progress { background-color: var(--cc-accent-soft); color: var(--cc-accent); }
 .cc-status-badge--not-started { background-color: var(--cc-border); color: var(--cc-muted); }
+
+/* --- Auth pages ----------------------------------------------------------- */
+.cc-auth-page {
+  min-height: calc(100vh - 54px);
+  display: grid;
+  place-items: center;
+  padding: 96px 20px 72px;
+}
+
+.cc-auth-card {
+  width: min(100%, 430px);
+  background-color: rgba(19, 27, 46, 0.96);
+  border: 1px solid rgba(0, 217, 192, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34), 0 0 30px rgba(0, 217, 192, 0.05);
+  padding: 28px 24px 24px;
+}
+
+.cc-auth-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+  color: var(--cc-accent);
+  font-size: 2.2rem;
+}
+
+.cc-auth-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.cc-auth-heading h1 {
+  margin-bottom: 8px;
+  color: var(--cc-text);
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: clamp(1.45rem, 4vw, 1.9rem);
+  font-weight: 700;
+}
+
+.cc-auth-heading p {
+  margin: 0;
+  color: var(--cc-muted);
+  font-size: 0.88rem;
+}
+
+.cc-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cc-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cc-form-field .form-label {
+  margin: 0;
+  color: var(--cc-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.cc-auth-card .form-control {
+  min-height: 46px;
+  border-radius: 8px !important;
+  padding: 10px 13px;
+  background-color: rgba(11, 17, 32, 0.88) !important;
+}
+
+.cc-auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+  font-size: 0.85rem;
+}
+
+.cc-auth-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--cc-text);
+  cursor: pointer;
+}
+
+.cc-auth-remember input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--cc-accent);
+}
+
+.cc-auth-options a,
+.cc-auth-switch a {
+  color: var(--cc-accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cc-auth-options a:hover,
+.cc-auth-switch a:hover {
+  color: #7bfff0;
+  text-decoration: underline;
+}
+
+.cc-auth-submit {
+  min-height: 46px;
+  margin-top: 2px;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.cc-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 18px;
+  color: var(--cc-muted);
+  font-size: 0.78rem;
+}
+
+.cc-auth-divider::before,
+.cc-auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: rgba(124, 138, 165, 0.26);
+}
+
+.cc-auth-divider span {
+  padding: 0 8px;
+  background-color: rgba(19, 27, 46, 0.96);
+}
+
+.cc-auth-oauth {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cc-auth-switch {
+  margin: 24px 0 0;
+  text-align: center;
+  color: var(--cc-text);
+  font-size: 0.84rem;
+}
+
+/* --- Challenge board ------------------------------------------------------ */
+.cc-page-hero {
+  padding: 80px 0 58px;
+  background-color: rgba(255, 255, 255, 0.035);
+  border-bottom: 1px solid var(--cc-border);
+  text-align: center;
+}
+
+.cc-page-hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+}
+
+.cc-page-hero p {
+  max-width: 620px;
+  margin: 12px auto 0;
+  color: var(--cc-muted);
+  font-size: 1rem;
+}
+
+.cc-challenges-container {
+  max-width: 1180px;
+  padding-top: 42px;
+  padding-bottom: 60px;
+}
+
+.cc-challenge-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.cc-challenge-filters {
+  position: sticky;
+  top: 82px;
+  padding: 22px;
+  background-color: var(--cc-surface);
+  border: 1px solid rgba(0, 217, 192, 0.16);
+  border-radius: 8px;
+}
+
+.cc-filter-section + .cc-filter-section {
+  margin-top: 24px;
+}
+
+.cc-filter-section h2 {
+  margin-bottom: 12px;
+  color: var(--cc-accent);
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cc-filter-section label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 9px 0;
+  color: var(--cc-text);
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.cc-filter-section input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--cc-accent);
+}
+
+.cc-challenge-board {
+  min-width: 0;
+}
+
+.cc-category-block + .cc-category-block {
+  margin-top: 38px;
+}
+
+.cc-category-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.cc-category-header h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.cc-category-header span {
+  color: var(--cc-muted);
+  font-size: 0.86rem;
+}
+
+.cc-challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cc-challenge-card {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 22px;
+  background-color: var(--cc-surface);
+  border: 1px solid rgba(0, 217, 192, 0.14);
+  border-radius: 8px;
+  color: var(--cc-text);
+  text-align: left;
+  box-shadow: none;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cc-challenge-card:hover,
+.cc-challenge-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(0, 217, 192, 0.4);
+  box-shadow: 0 16px 34px rgba(0, 217, 192, 0.08);
+  outline: 0;
+}
+
+.cc-challenge-card.challenge-solved {
+  border-color: rgba(52, 211, 153, 0.42);
+}
+
+.cc-challenge-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cc-challenge-card-top h3 {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.cc-challenge-card-top i {
+  color: var(--cc-accent);
+}
+
+.cc-challenge-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 14px 0 24px;
+}
+
+.cc-challenge-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 8px;
+  border: 1px solid rgba(124, 138, 165, 0.32);
+  border-radius: 6px;
+  color: #b6c2da;
+  font-size: 0.72rem;
+}
+
+.cc-challenge-tags .cc-difficulty-pill {
+  border-color: rgba(0, 217, 192, 0.36);
+  background-color: var(--cc-accent-soft);
+  color: var(--cc-accent);
+}
+
+.challenge-solved .cc-challenge-tags .cc-difficulty-pill {
+  border-color: rgba(52, 211, 153, 0.38);
+  background-color: rgba(52, 211, 153, 0.12);
+  color: #34d399;
+}
+
+.cc-challenge-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  color: #b6c2da;
+  font-size: 0.86rem;
+}
+
+.cc-challenge-meta strong {
+  color: var(--cc-accent);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.cc-challenge-action {
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  margin-top: 20px;
+  border-radius: 8px;
+  background-color: var(--cc-accent);
+  color: #031014;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  .cc-challenge-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-challenge-filters {
+    position: static;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cc-auth-page {
+    padding-top: 86px;
+  }
+
+  .cc-challenge-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cc-category-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* --- Subscription upgrade page ------------------------------------------ */
+.cc-subscription-page {
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  padding: 28px 0 48px;
+}
+
+.cc-subscription-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 28px;
+  align-items: stretch;
+  min-height: 410px;
+  padding: 42px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(0, 217, 192, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(19, 27, 46, 0.98), rgba(8, 13, 25, 0.98));
+  border: 1px solid rgba(0, 217, 192, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+}
+
+.cc-subscription-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 42px 36px auto;
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(0, 217, 192, 0.18);
+  border-radius: 999px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cc-subscription-hero-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 680px;
+}
+
+.cc-subscription-kicker,
+.cc-section-heading span,
+.cc-plan-label,
+.cc-pricing-card > span {
+  color: var(--cc-accent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cc-subscription-hero h1 {
+  margin: 12px 0 16px;
+  color: var(--cc-text);
+  font-size: clamp(2.35rem, 6vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.04;
+}
+
+.cc-subscription-hero p {
+  max-width: 650px;
+  margin: 0;
+  color: #a9b6cf;
+  font-size: 1.04rem;
+  line-height: 1.8;
+}
+
+.cc-subscription-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cc-subscription-actions form {
+  margin: 0;
+}
+
+.cc-subscription-actions .btn {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 22px;
+}
+
+.cc-current-plan-card {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+  background-color: rgba(11, 17, 32, 0.74);
+  border: 1px solid rgba(0, 217, 192, 0.22);
+  border-radius: 8px;
+}
+
+.cc-current-plan-card span {
+  color: var(--cc-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cc-current-plan-card strong {
+  margin: 10px 0 2px;
+  color: var(--cc-text);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 2rem;
+}
+
+.cc-current-plan-card small {
+  color: var(--cc-muted);
+}
+
+.cc-plan-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin-top: 22px;
+  padding: 8px 11px;
+  background-color: rgba(124, 138, 165, 0.12);
+  border: 1px solid rgba(124, 138, 165, 0.24);
+  border-radius: 999px;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cc-plan-state-active {
+  background-color: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.34);
+  color: #34d399;
+}
+
+.cc-subscription-section {
+  scroll-margin-top: 88px;
+}
+
+.cc-section-heading {
+  max-width: 720px;
+  margin-bottom: 24px;
+}
+
+.cc-section-heading h2 {
+  margin: 8px 0 0;
+  color: var(--cc-text);
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+}
+
+.cc-section-heading p {
+  margin: 10px 0 0;
+  color: var(--cc-muted);
+}
+
+.cc-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cc-feature-card,
+.cc-plan-card,
+.cc-pricing-card,
+.cc-faq-list details {
+  background-color: rgba(19, 27, 46, 0.92);
+  border: 1px solid rgba(0, 217, 192, 0.14);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
+}
+
+.cc-feature-card {
+  min-height: 210px;
+  padding: 24px;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cc-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 217, 192, 0.36);
+  box-shadow: 0 24px 56px rgba(0, 217, 192, 0.08);
+}
+
+.cc-feature-card i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 18px;
+  background-color: var(--cc-accent-soft);
+  border: 1px solid rgba(0, 217, 192, 0.28);
+  border-radius: 8px;
+  color: var(--cc-accent);
+  font-size: 1rem;
+}
+
+.cc-feature-card h3,
+.cc-plan-card h3,
+.cc-pricing-card h3 {
+  margin: 0 0 10px;
+  color: var(--cc-text);
+  font-size: 1.1rem;
+}
+
+.cc-feature-card p,
+.cc-plan-card p,
+.cc-pricing-card p,
+.cc-faq-list p {
+  margin: 0;
+  color: #9aa8c4;
+  line-height: 1.65;
+}
+
+.cc-plan-comparison,
+.cc-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cc-plan-card,
+.cc-pricing-card {
+  position: relative;
+  padding: 26px;
+}
+
+.cc-plan-card-premium,
+.cc-pricing-card-featured {
+  border-color: rgba(0, 217, 192, 0.42);
+  box-shadow: 0 24px 64px rgba(0, 217, 192, 0.08);
+}
+
+.cc-plan-card ul,
+.cc-pricing-card ul {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 0;
+  margin: 24px 0 0;
+  list-style: none;
+}
+
+.cc-plan-card li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #d7deec;
+  font-weight: 600;
+}
+
+.cc-plan-card li i {
+  color: var(--cc-accent);
+}
+
+.cc-pricing-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+}
+
+.cc-pricing-card h3 {
+  margin-top: 10px;
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.cc-pricing-card form,
+.cc-pricing-card .btn {
+  margin-top: auto;
+}
+
+.cc-save-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 6px 10px;
+  background-color: rgba(255, 138, 61, 0.12);
+  border: 1px solid rgba(255, 138, 61, 0.34);
+  border-radius: 999px;
+  color: var(--cc-bounty);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.cc-faq-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cc-faq-list details {
+  padding: 18px 20px;
+}
+
+.cc-faq-list summary {
+  cursor: pointer;
+  color: var(--cc-text);
+  font-weight: 800;
+}
+
+.cc-faq-list summary::marker {
+  color: var(--cc-accent);
+}
+
+.cc-faq-list p {
+  margin-top: 12px;
+}
+
+.cc-billing-section {
+  padding-top: 10px;
+}
+
+.cc-billing-section .table-responsive {
+  background-color: rgba(19, 27, 46, 0.7);
+  border: 1px solid rgba(0, 217, 192, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cc-billing-section .table {
+  margin-bottom: 0;
+}
+
+@media (max-width: 991.98px) {
+  .cc-subscription-page {
+    gap: 54px;
+  }
+
+  .cc-subscription-hero {
+    grid-template-columns: 1fr;
+    padding: 32px;
+  }
+
+  .cc-current-plan-card {
+    min-height: auto;
+  }
+
+  .cc-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .cc-subscription-hero {
+    padding: 26px 20px;
+  }
+
+  .cc-subscription-actions,
+  .cc-subscription-actions form,
+  .cc-subscription-actions .btn {
+    width: 100%;
+  }
+
+  .cc-feature-grid,
+  .cc-plan-comparison,
+  .cc-pricing-grid {
+    grid-template-columns: 1fr;
+  }
+}

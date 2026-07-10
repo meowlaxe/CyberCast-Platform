@@ -11,6 +11,7 @@ from CTFd.plugins import (
     register_plugin_assets_directory,
     register_plugin_script,
 )
+from CTFd.plugins.migrations import upgrade
 
 from .models import BountyPrograms, BountySubmissions  # noqa: F401
 from .routes import bounty_bp
@@ -18,6 +19,7 @@ from .routes import bounty_bp
 
 def load(app):
     app.db.create_all()
+    upgrade(plugin_name="ctfd_bounty")
     app.register_blueprint(bounty_bp)
 
     register_plugin_assets_directory(app, base_path="/plugins/ctfd_bounty/static/")
