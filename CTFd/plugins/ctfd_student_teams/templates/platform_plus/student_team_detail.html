@@ -1,0 +1,113 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap mb-4">
+  <div>
+    <span class="badge badge-info mb-2">{{ team.visibility }}</span>
+    <h1>{{ team.name }}</h1>
+    <p class="text-muted mb-0">
+      {{ team.description or "This team has not added a description yet." }}
+    </p>
+  </div>
+  {% if can_manage %}
+    <div class="d-flex align-items-center">
+      <a
+          class="btn btn-outline-primary mr-2"
+          href="{{ url_for('student_teams.team_edit', slug=team.slug) }}"
+      >
+        Edit
+      </a>
+      {% if team.status == "active" %}
+        <form method="POST" action="{{ url_for('student_teams.team_archive', slug=team.slug) }}">
+          <input type="hidden" name="nonce" value="{{ session.nonce }}">
+          <button type="submit" class="btn btn-outline-secondary">Archive</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% if team.banner %}
+  <div class="card mb-4">
+    <img class="card-img-top" src="{{ team.banner }}" alt="{{ team.name }} banner">
+  </div>
+{% endif %}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Overview</h2>
+        <p class="mb-0">
+          Student Teams are permanent communities for learning together while challenge solves,
+          flags, learning paths, and progress remain individual.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Statistics</h2>
+        <div class="row">
+          <div class="col-sm-4 mb-3 mb-sm-0">
+            <small class="text-muted">Total Score</small>
+            <h3 class="mb-0">0</h3>
+          </div>
+          <div class="col-sm-4 mb-3 mb-sm-0">
+            <small class="text-muted">Solves</small>
+            <h3 class="mb-0">0</h3>
+          </div>
+          <div class="col-sm-4">
+            <small class="text-muted">Status</small>
+            <h3 class="mb-0">{{ team.status|title }}</h3>
+          </div>
+        </div>
+        <p class="text-muted mt-3 mb-0">Team scoring starts in Phase 2.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Activity</h2>
+        <p class="text-muted mb-0">
+          Solve activity will appear here after Team Score is implemented.
+        </p>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Leaderboard</h2>
+        <p class="text-muted mb-0">
+          Team leaderboard position and member rankings are coming soon.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Members</h2>
+        {% if owner %}
+          <div class="d-flex align-items-center justify-content-between">
+            <span>{{ owner.name }}</span>
+            <span class="badge badge-primary">Owner</span>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No owner assigned.</p>
+        {% endif %}
+        <p class="text-muted mt-3 mb-0">Member management starts in Phase 2.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h2 class="h4">Top Contributors</h2>
+        <p class="text-muted mb-0">
+          Contributor rankings will appear after Team Score is implemented.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -2,9 +2,13 @@
 {% block pp_content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1>Organizations</h1>
-  <a class="btn btn-primary" href="{{ url_for('organizations.organizations_new') }}">+ Register Organization</a>
+  <a class="btn btn-primary" href="{{ url_for('organizations.organizations_new') }}">
+    Request Organization
+  </a>
 </div>
-<p class="text-muted">Collaboration space for universities, campuses, or cybersecurity communities.</p>
+<p class="text-muted">
+  Organization is an identity layer for universities, companies, and communities.
+</p>
 
 <div class="row">
   {% for org in organizations %}
@@ -16,13 +20,15 @@
           {% if org.verified %}<span class="badge badge-success">Verified</span>{% endif %}
         </h5>
         <span class="badge badge-secondary text-uppercase">{{ org.org_type }}</span>
-        <p class="card-text mt-2">{{ (org.description or "")[:120] }}{% if org.description and org.description|length > 120 %}...{% endif %}</p>
+        <p class="card-text mt-2">
+          {{ (org.description or "")[:120] }}{% if org.description and org.description|length > 120 %}...{% endif %}
+        </p>
         <a href="{{ url_for('organizations.organization_detail', slug=org.slug) }}" class="btn btn-outline-primary btn-sm">View</a>
       </div>
     </div>
   </div>
   {% else %}
-  <p>No organizations registered yet. Be the first!</p>
+  <p>No organizations available yet. Request one if it is missing.</p>
   {% endfor %}
 </div>
 {% endblock %}

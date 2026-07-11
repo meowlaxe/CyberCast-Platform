@@ -55,13 +55,18 @@
           </button>
           <ul class="dropdown-menu">
             <li>
-              <a class="dropdown-item" href="{{ url_for('organizations.organizations_list') }}">
-                {% trans %}Organizations{% endtrans %}
+              <a class="dropdown-item" href="{{ url_for('student_teams.team_list') }}">
+                {% trans %}Student Teams{% endtrans %}
               </a>
             </li>
             <li>
               <a class="dropdown-item" href="{{ url_for('team_finder.team_finder_list') }}">
-                {% trans %}Find a Team{% endtrans %}
+                {% trans %}Team Finder{% endtrans %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('organizations.organizations_list') }}">
+                {% trans %}Organizations{% endtrans %}
               </a>
             </li>
           </ul>

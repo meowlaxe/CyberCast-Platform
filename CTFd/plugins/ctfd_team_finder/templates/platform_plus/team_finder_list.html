@@ -1,10 +1,21 @@
 {% extends "platform_plus/_base.html" %}
 {% block pp_content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1>Find a Team</h1>
-  <a class="btn btn-primary" href="{{ url_for('team_finder.team_finder_new') }}">+ Create Post</a>
+  <div>
+    <h1>Team Finder</h1>
+    <p class="text-muted mb-0">
+      Discover Student Teams or post that you are looking for teammates.
+    </p>
+  </div>
+  <div>
+    <a class="btn btn-outline-primary" href="{{ url_for('student_teams.team_list') }}">
+      Explore Student Teams
+    </a>
+    <a class="btn btn-primary" href="{{ url_for('team_finder.team_finder_new') }}">
+      Create Post
+    </a>
+  </div>
 </div>
-<p class="text-muted">Find teammates, or offer your skills to a team that needs members.</p>
 
 {% for post in posts %}
 <div class="card mb-3">

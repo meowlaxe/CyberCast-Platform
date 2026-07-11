@@ -1,6 +1,10 @@
 {% extends "platform_plus/_base.html" %}
 {% block pp_content %}
-<h1>Register Organization</h1>
+<h1>Request Organization</h1>
+<p class="text-muted">
+  Request a new Organization identity if your university, company, or community
+  is not available yet.
+</p>
 <form method="POST" action="{{ url_for('organizations.organizations_new') }}">
   <input type="hidden" name="nonce" value="{{ session.nonce }}">
   <div class="form-group">
@@ -23,6 +27,6 @@
     <label>Description</label>
     <textarea name="description" class="form-control" rows="4"></textarea>
   </div>
-  <button type="submit" class="btn btn-primary">Create Organization</button>
+  <button type="submit" class="btn btn-primary">Submit Request</button>
 </form>
 {% endblock %}
