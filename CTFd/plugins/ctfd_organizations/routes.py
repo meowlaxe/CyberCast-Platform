@@ -7,7 +7,7 @@ import re
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
-from CTFd.models import Users, db
+from CTFd.models import Teams, Users, db
 from CTFd.utils.decorators import admins_only, authed_only
 from CTFd.utils.user import get_current_user
 
@@ -27,12 +27,70 @@ def slugify(value: str) -> str:
     return re.sub(r"[-\s]+", "-", value)
 
 
+def get_organization_teams(org_id):
+    """
+    A CTFd Team "belongs" to an organization if at least one of its members
+    is a member of that organization.
+    """
+    rows = (
+        db.session.query(Teams, db.func.count(Users.id))
+        .join(Users, Users.team_id == Teams.id)
+        .join(
+            OrganizationMembers,
+            db.and_(
+                OrganizationMembers.user_id == Users.id,
+                OrganizationMembers.organization_id == org_id,
+            ),
+        )
+        .group_by(Teams.id)
+        .order_by(Teams.name.asc())
+        .all()
+    )
+    return [{"team": team, "org_member_count": count} for team, count in rows]
+
+
 @organizations_bp.route("/organizations")
 def organizations_list():
     orgs = Organizations.query.order_by(
         Organizations.verified.desc(), Organizations.name.asc()
     ).all()
-    return render_template("platform_plus/organizations_list.html", organizations=orgs)
+
+    # Build per-org stats (teams, members, points) for cards + sidebar.
+    org_stats = {}
+    for org in orgs:
+        member_rows = (
+            db.session.query(OrganizationMembers, Users)
+            .join(Users, OrganizationMembers.user_id == Users.id)
+            .filter(OrganizationMembers.organization_id == org.id)
+            .all()
+        )
+        member_count = len(member_rows)
+        points = sum(user.get_score(admin=True) for _membership, user in member_rows)
+        team_count = len(get_organization_teams(org.id))
+
+        org_stats[org.id] = {
+            "teams": team_count,
+            "members": member_count,
+            "points": points,
+        }
+
+    # Sidebar: top 3 organizations ranked by points (ties broken by name).
+    top_organizations = sorted(
+        orgs,
+        key=lambda o: (-org_stats[o.id]["points"], o.name.lower()),
+    )[:3]
+
+    platform_stats = {
+        "organizations": len(orgs),
+    }
+
+    return render_template(
+        "platform_plus/organizations_list.html",
+        organizations=orgs,
+        org_stats=org_stats,
+        top_organizations=top_organizations,
+        platform_stats=platform_stats,
+    )
 
 
 @organizations_bp.route("/organizations/new", methods=["GET", "POST"])
