@@ -48,6 +48,16 @@ def get_organization_teams(org_id):
     )
     return [{"team": team, "org_member_count": count} for team, count in rows]
 
+def get_team_organization(team_id):
+    """Returns the Organization a team directly declared itself part of, if any."""
+    link = TeamOrganizationLinks.query.filter_by(team_id=team_id).first()
+    return link.organization if link else None
+
+
+def get_user_organization(user_id):
+    """Returns the Organization a user has personally joined, if any."""
+    membership = OrganizationMembers.query.filter_by(user_id=user_id).first()
+    return membership.organization if membership else None
 
 @organizations_bp.route("/organizations")
 def organizations_list():
