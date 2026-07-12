@@ -22,8 +22,22 @@
     <div class="collapse navbar-collapse" id="base-navbars">
       <ul class="navbar-nav cc-navbar-main">
         {% if authed() %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('users.private') }}">{% trans %}Dashboard{% endtrans %}</a>
+          <li class="nav-item dropdown">
+            <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% trans %}Dashboard{% endtrans %}
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="/">
+                  {% trans %}Homepage{% endtrans %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('users.private') }}">
+                  {% trans %}My Profile{% endtrans %}
+                </a>
+              </li>
+            </ul>
           </li>
         {% else %}
           <li class="nav-item">
