@@ -137,6 +137,8 @@ pymysql[rsa]==1.1.1
     # via
     #   -r requirements.in
     #   pymysql
+psycopg2-binary==2.9.10
+    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   botocore
