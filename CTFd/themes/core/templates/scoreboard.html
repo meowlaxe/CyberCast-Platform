@@ -55,69 +55,105 @@
           </div>
         </div>
 
-        <div id="scoreboard" class="row" x-data="ScoreboardList">
-          <template x-if="brackets.length && standings.length">
-            <div class="col-md-12 py-3">
-              <nav class="nav nav-pills nav-fill">
-                <button :class="{'nav-link': true, 'active': !activeBracket}" @click="activeBracket=null">{% trans %}All{% endtrans %}</button>
-                <template x-for="bracket in brackets">
-                  <button :class="{'nav-link': true, 'active': activeBracket == bracket.id}" x-text="bracket.name" @click="activeBracket=bracket.id"></button>
-                </template>
-              </nav>
-            </div>
-          </template>
+<div id="scoreboard" class="row" x-data="ScoreboardList">
+  <template x-if="brackets.length && standings.length">
+    <div class="col-md-12 py-3">
+      <nav class="nav nav-pills nav-fill">
+        <button
+          :class="{'nav-link': true, 'active': !activeBracket}"
+          @click="activeBracket=null"
+        >
+          {% trans %}All{% endtrans %}
+        </button>
 
-          <div class="col-md-12" x-show="standings.length">
-            <table class="table table-striped align-middle">
-              <thead>
-              <tr>
-                <th style="width: 10px">{% trans %}Place{% endtrans %}</th>
-                <th class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
-                <th>{% trans %}Score{% endtrans %}</th>
-              </tr>
-              </thead>
+        <template x-for="bracket in brackets">
+          <button
+            :class="{'nav-link': true, 'active': activeBracket == bracket.id}"
+            x-text="bracket.name"
+            @click="activeBracket=bracket.id"
+          ></button>
+        </template>
+      </nav>
+    </div>
+  </template>
 
-              <tbody>
-                <template x-for="(standing, index) in standings.filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
-                  <tr>
-                    <th scope="row" class="text-center" x-text="index + 1"></th>
-                    <td class="text-start">
-                      <a :href="standing.account_url" x-text="standing.name"></a>
-                      <template x-if="standing.bracket_name">
-                        <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
-                      </template>
-                    </td>
-                    <td x-text="standing.score"></td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-          </div>
+  <div class="col-md-12" x-show="standings.length">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th style="width:10px">{% trans %}Place{% endtrans %}</th>
+          <th class="text-start ps-3">
+            {{ get_mode_as_word(capitalize=True) }}
+          </th>
+          <th>{% trans %}Score{% endtrans %}</th>
+        </tr>
+      </thead>
 
-          <div class="col-md-12" x-show="! standings.length">
-            <h3 class="text-center text-muted">{% trans %}Scoreboard is empty{% endtrans %}</h3>
-          </div>
-        </div>
-      </div>
+      <tbody>
+        <template
+          x-for="(standing, index) in standings.filter(i => activeBracket ? i.bracket_id == activeBracket : true)"
+        >
+          <tr>
+            <th scope="row" class="text-center" x-text="index + 1"></th>
 
-      <div
-          class="tab-pane fade"
-          id="team-leaderboard"
-          role="tabpanel"
-          aria-labelledby="team-leaderboard-tab"
-      >
-        <div class="card">
-          <div class="card-body text-center p-5">
-            <h2 class="h4">Team Leaderboard</h2>
-            <p class="text-muted mb-3">
-              CyberCast Team Leaderboard will rank Student Teams by team score.
-            </p>
-            <span class="badge badge-info">Coming Soon</span>
-          </div>
-        </div>
+            <td class="text-start">
+              <a :href="standing.account_url" x-text="standing.name"></a>
+
+              <template x-if="standing.bracket_name">
+                <span
+                  class="badge bg-secondary ms-2"
+                  x-text="standing.bracket_name"
+                ></span>
+              </template>
+            </td>
+
+            <td x-text="standing.score"></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-md-12" x-show="!standings.length">
+    <div class="card">
+      <div class="card-body text-center p-5">
+        <h2 class="h4">Individual Leaderboard</h2>
+
+        <p class="text-muted mb-3">
+          CyberCast Individual Leaderboard will rank students by individual
+          challenge points and learning progress.
+        </p>
+
+        <span class="badge bg-info">Coming Soon</span>
       </div>
     </div>
   </div>
+</div> <!-- END #scoreboard -->
+
+</div> <!-- END #individual-leaderboard -->
+
+<div
+  class="tab-pane fade"
+  id="team-leaderboard"
+  role="tabpanel"
+  aria-labelledby="team-leaderboard-tab"
+>
+  <div class="card">
+    <div class="card-body text-center p-5">
+      <h2 class="h4">Team Leaderboard</h2>
+
+      <p class="text-muted mb-3">
+        CyberCast Team Leaderboard will rank Student Teams by team score.
+      </p>
+
+      <span class="badge bg-info">Coming Soon</span>
+    </div>
+  </div>
+</div> <!-- END #team-leaderboard -->
+
+</div> <!-- END .tab-content -->
+
+</div> <!-- END .container -->
 {% endblock %}
 
 {% block scripts %}

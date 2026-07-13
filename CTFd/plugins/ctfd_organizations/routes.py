@@ -54,10 +54,10 @@ def get_team_organization(team_id):
     return link.organization if link else None
 
 # TODO: Requires a TeamOrganizationLinks model (not yet implemented).
-# def get_user_organization(user_id):
-    #"""Returns the Organization a user has personally joined, if any."""
-    #membership = OrganizationMembers.query.filter_by(user_id=user_id).first()
-    #return membership.organization if membership else None
+def get_user_organization(user_id):
+    """Returns the Organization a user has personally joined, if any."""
+    membership = OrganizationMembers.query.filter_by(user_id=user_id).first()
+    return membership.organization if membership else None
 
 @organizations_bp.route("/organizations")
 def organizations_list():
