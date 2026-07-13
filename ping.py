@@ -15,9 +15,13 @@ url = make_url(Config.DATABASE_URL)
 if url.drivername.startswith("sqlite"):
     exit(0)
 
-# Null out the database so raw_connection doesnt error if it doesnt exist
-# CTFd will create the database if it doesnt exist
-url = url._replace(database=None)
+# CTFd can create a local database, so historically this check connects without
+# one. Supabase's shared pooler requires the target database name to be present;
+# without it PostgreSQL defaults to the pooler username (postgres.<project-ref>),
+# which is not a database.
+is_supabase_pooler = url.host and url.host.endswith(".pooler.supabase.com")
+if not is_supabase_pooler:
+    url = url._replace(database=None)
 
 # Wait for the database server to be available
 engine = create_engine(url)
