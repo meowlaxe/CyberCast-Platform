@@ -129,18 +129,36 @@ def project_list_view():
     if role == "student" and not is_admin:
         return render_template("bounty_collab/no_access.html")
 
-    # Partners see their own projects too (all statuses) plus public ones
-    if role == "partner" or is_admin:
+    PUBLIC_STATUSES = ["published", "recruiting", "applications_closed"]
+
+    if is_admin:
+        # Admin sees every project regardless of status or owner
         projects = (
             CollabProject.query
-            .filter(CollabProject.owner_id == user.id)
+            .order_by(CollabProject.created_at.desc())
+            .all()
+        )
+    elif role == "partner":
+        # Partners see:
+        #   - Their own projects in ALL statuses (including drafts)
+        #   - Every other partner's publicly visible projects
+        from sqlalchemy import or_
+        projects = (
+            CollabProject.query
+            .filter(
+                or_(
+                    CollabProject.owner_id == user.id,
+                    CollabProject.status.in_(PUBLIC_STATUSES),
+                )
+            )
             .order_by(CollabProject.created_at.desc())
             .all()
         )
     else:
+        # Experts: publicly visible projects only
         projects = (
             CollabProject.query
-            .filter(CollabProject.status.in_(["published", "recruiting", "applications_closed"]))
+            .filter(CollabProject.status.in_(PUBLIC_STATUSES))
             .order_by(CollabProject.created_at.desc())
             .all()
         )
@@ -149,6 +167,7 @@ def project_list_view():
         projects=projects,
         cents_to_usd=_cents_to_usd,
         user_role=role,
+        current_user_id=user.id,
     )
 
 

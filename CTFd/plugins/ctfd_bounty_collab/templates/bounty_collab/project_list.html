@@ -10,12 +10,13 @@
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      {% if user_role == 'partner' %}
-      <h2 class="mb-0">My Bounty Projects</h2>
-      <small class="text-muted">Projects you have posted — manage their lifecycle here</small>
-      {% else %}
       <h2 class="mb-0">Research Bounty Projects</h2>
+      {% if user_role == 'partner' %}
+      <small class="text-muted">Browse all open projects — your own projects are highlighted</small>
+      {% elif user_role == 'expert' %}
       <small class="text-muted">Open projects available for application</small>
+      {% else %}
+      <small class="text-muted">All research bounty projects</small>
       {% endif %}
     </div>
     <div class="d-flex gap-2">
@@ -24,7 +25,7 @@
         <i class="fas fa-clipboard-list me-1"></i> My Applications
       </a>
       {% endif %}
-      {% if user_role == 'partner' %}
+      {% if user_role in ['partner', 'admin'] %}
       <a href="{{ url_for('bounty_collab.project_new_view') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i> Post Project
       </a>
@@ -43,9 +44,16 @@
           <div class="card-body">
 
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <span class="badge" style="background:#0d6efd22; color:#4f9eff; font-size:.7rem;">
-                {{ p.category or "General" }}
-              </span>
+              <div class="d-flex gap-1 flex-wrap">
+                <span class="badge" style="background:#0d6efd22; color:#4f9eff; font-size:.7rem;">
+                  {{ p.category or "General" }}
+                </span>
+                {% if p.owner_id == current_user_id %}
+                <span class="badge" style="background:#ffc10722; color:#ffc107; font-size:.65rem;">
+                  <i class="fas fa-user-edit me-1"></i>Your Project
+                </span>
+                {% endif %}
+              </div>
               {% if p.status == 'draft' %}
                 <span class="badge bg-secondary">Draft</span>
               {% elif p.status == 'published' %}
@@ -115,15 +123,14 @@
 
   <div class="text-center py-5" style="color:#666;">
     <i class="fas fa-search fa-3x mb-3"></i>
-    {% if user_role == 'partner' %}
-    <h5>You haven't posted any projects yet</h5>
-    <p class="text-muted">Post your first research bounty to start finding university experts.</p>
+    <h5 class="text-muted">No projects available right now</h5>
+    {% if user_role in ['partner', 'admin'] %}
+    <p class="text-muted small">Be the first to post a research bounty and find university experts.</p>
     <a href="{{ url_for('bounty_collab.project_new_view') }}" class="btn btn-primary mt-2">
       <i class="fas fa-plus me-1"></i> Post a Project
     </a>
     {% else %}
-    <h5>No open projects right now</h5>
-    <p class="text-muted">Check back soon — new projects are posted regularly.</p>
+    <p class="text-muted small">Check back soon — new research projects are posted regularly.</p>
     {% endif %}
   </div>
 
