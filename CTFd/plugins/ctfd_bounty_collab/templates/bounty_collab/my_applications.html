@@ -1,0 +1,114 @@
+{# =============================================================================
+   File: templates/bounty_collab/my_applications.html
+   Created: 2026-07-15 — Expert's personal application tracking dashboard
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:800px;">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-white mb-0">My Applications</h2>
+      <small class="text-muted">Track all your bounty project applications</small>
+    </div>
+    <a href="{{ url_for('bounty_collab.project_list_view') }}" class="btn btn-outline-secondary btn-sm">
+      ← Browse Projects
+    </a>
+  </div>
+
+  {% set status_info = {
+    'pending':     {'label': 'Pending Review',  'color': '#ffc107', 'bg': '#ffc10722', 'icon': 'fa-clock'},
+    'shortlisted': {'label': 'Shortlisted',     'color': '#4f9eff', 'bg': '#4f9eff22', 'icon': 'fa-star'},
+    'accepted':    {'label': 'Accepted',         'color': '#00c896', 'bg': '#00c89622', 'icon': 'fa-check-circle'},
+    'rejected':    {'label': 'Not Selected',     'color': '#dc3545', 'bg': '#dc354522', 'icon': 'fa-times-circle'},
+    'withdrawn':   {'label': 'Withdrawn',        'color': '#888',    'bg': '#88888822', 'icon': 'fa-minus-circle'},
+  } %}
+
+  {% if applications %}
+  <div class="d-flex flex-column gap-3">
+    {% for app in applications %}
+    {% set project = project_map.get(app.project_id) %}
+    {% set si = status_info.get(app.status, {'label': app.status, 'color': '#888', 'bg': '#88888822', 'icon': 'fa-circle'}) %}
+    <div class="card border-0" style="background:#1a1f2e;">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+
+          <div class="flex-grow-1">
+            <a href="{{ url_for('bounty_collab.project_detail_view', project_id=app.project_id) }}"
+               class="text-white text-decoration-none fw-bold h6 mb-1 d-block">
+              {{ project.title if project else 'Project #' ~ app.project_id }}
+            </a>
+            {% if project %}
+            <div class="d-flex gap-2 flex-wrap mb-2">
+              {% if project.category %}
+              <span class="badge" style="background:#0d6efd22; color:#4f9eff; font-size:.7rem;">{{ project.category }}</span>
+              {% endif %}
+              <span class="badge" style="background:#ffffff11; color:#aaa; font-size:.7rem;">
+                ${{ "%.2f"|format(cents_to_usd(project.budget_total)) }} budget
+              </span>
+            </div>
+            {% endif %}
+            {% if app.team_name %}
+            <div class="text-muted small"><i class="fas fa-users me-1"></i>{{ app.team_name }}</div>
+            {% endif %}
+            {% if app.cover_note %}
+            <div class="text-muted small mt-1" style="font-size:.8rem;">
+              "{{ app.cover_note | truncate(120) }}"
+            </div>
+            {% endif %}
+            <div class="text-muted small mt-1">
+              Applied {{ app.created_at.strftime('%d %b %Y') if app.created_at else '' }}
+            </div>
+          </div>
+
+          <div class="text-end">
+            <div class="px-3 py-2 rounded" style="background:{{ si.bg }};">
+              <div style="color:{{ si.color }}; font-size:1.2rem;">
+                <i class="fas {{ si.icon }}"></i>
+              </div>
+              <div style="color:{{ si.color }}; font-size:.75rem; font-weight:600;">{{ si.label }}</div>
+            </div>
+
+            {% if app.status == 'accepted' and project %}
+            <a href="{{ url_for('bounty_collab.team_workspace_view', project_id=project.id) }}"
+               class="btn btn-success btn-sm mt-2 d-block">Open Workspace</a>
+            {% endif %}
+          </div>
+
+        </div>
+
+        {# Status-specific messages #}
+        {% if app.status == 'pending' %}
+        <div class="alert mt-2 mb-0 py-2 px-3" style="background:#ffc10711; border:1px solid #ffc10733; color:#ffc107; font-size:.8rem;">
+          <i class="fas fa-info-circle me-1"></i>
+          Your application is being reviewed by the project owner. You'll be notified of any updates.
+        </div>
+        {% elif app.status == 'shortlisted' %}
+        <div class="alert mt-2 mb-0 py-2 px-3" style="background:#4f9eff11; border:1px solid #4f9eff33; color:#4f9eff; font-size:.8rem;">
+          <i class="fas fa-star me-1"></i>
+          You're on the shortlist! Final selection is still in progress.
+        </div>
+        {% elif app.status == 'accepted' %}
+        <div class="alert mt-2 mb-0 py-2 px-3" style="background:#00c89611; border:1px solid #00c89633; color:#00c896; font-size:.8rem;">
+          <i class="fas fa-check-circle me-1"></i>
+          Congratulations! Go to the Team Workspace to start collaborating.
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="text-center py-5" style="color:#555;">
+    <i class="fas fa-clipboard fa-3x mb-3"></i>
+    <h5 class="text-white">No applications yet</h5>
+    <p class="text-muted">Browse open projects and apply to start your research journey.</p>
+    <a href="{{ url_for('bounty_collab.project_list_view') }}" class="btn btn-primary mt-2">Browse Projects</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

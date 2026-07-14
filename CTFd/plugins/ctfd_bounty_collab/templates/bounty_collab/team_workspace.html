@@ -1,98 +1,305 @@
 {# =============================================================================
-   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/team_workspace.html
-   Plugin: ctfd_bounty_collab
-   Created: 2026-07-15  Author: Claude / CyberCast implementation
-   Purpose: Team workspace — active members submit deliverables; owner
-            sees team progress and controls review/revision flow.
+   File: templates/bounty_collab/team_workspace.html
+   Modified: 2026-07-15 — Full dark-theme workspace for expert deliverable
+             submission and partner review. Shows payout info, revision notes,
+             and full deliverable history.
    ============================================================================= #}
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>{{ project.title }}</h2>
-  <p>
-    Status: <strong>{{ project.status }}</strong>
-    {% if project.status == 'submitted_for_review' %}
-    <span class="badge badge-warning ml-2">Awaiting Review</span>
-    {% elif project.status == 'revision_requested' %}
-    <span class="badge badge-danger ml-2">Revision Requested</span>
-    {% elif project.status == 'in_progress' %}
-    <span class="badge badge-success ml-2">In Progress</span>
-    {% endif %}
-  </p>
+<div class="container mt-4" style="max-width:860px;">
 
-  {% if member %}
-  <div class="alert alert-info">
-    Your payout share: <strong>{{ member.payout_percentage }}%</strong>
-    {% if member.is_team_lead %}<span class="badge badge-primary ml-1">Team Lead</span>{% endif %}
-  </div>
-  {% endif %}
+  <a href="{{ url_for('bounty_collab.project_detail_view', project_id=project.id) }}"
+     class="text-muted small mb-3 d-inline-block">
+    ← Back to Project
+  </a>
 
-  {# Submit deliverable form (team members only, in_progress/revision_requested) #}
-  {% if member and project.status in ['in_progress', 'revision_requested'] %}
-  <div class="card mb-4">
-    <div class="card-header">Submit Deliverable</div>
-    <div class="card-body">
-      <form id="bntc-submit-deliverable">
-        <div class="form-group">
-          <label>Content / Description *</label>
-          <textarea class="form-control" id="deliverableContent" rows="5"></textarea>
-        </div>
-        <div class="form-group">
-          <label>File Reference (URL or path, optional)</label>
-          <input class="form-control" id="deliverableFile">
-        </div>
-        <button type="submit" class="btn btn-success">Submit</button>
-      </form>
+  {# ── Header ── #}
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="text-white mb-1">{{ project.title }}</h2>
+      <small class="text-muted">Team Workspace</small>
     </div>
+    {% set sc = {
+      'team_locked': ('primary','Team Selected — Not Started'),
+      'in_progress': ('success','In Progress'),
+      'submitted_for_review': ('warning','Awaiting Partner Review'),
+      'revision_requested': ('danger','Revision Requested'),
+      'approved': ('success','Approved'),
+      'paid_out': ('success','Paid Out'),
+      'closed': ('secondary','Closed'),
+    } %}
+    {% set badge = sc.get(project.status, ('secondary', project.status | replace('_',' ') | title)) %}
+    <span class="badge bg-{{ badge[0] }} fs-6 align-self-center">{{ badge[1] }}</span>
+  </div>
+
+  {# ── Revision alert ── #}
+  {% if project.status == 'revision_requested' %}
+  {% set latest = deliverables | first if deliverables else None %}
+  <div class="alert" style="background:#dc354522; border:1px solid #dc354566; color:#ff6b6b;" role="alert">
+    <i class="fas fa-redo me-2"></i>
+    <strong>Revision Requested</strong>
+    {% if latest and latest.reviewer_note %}
+    — {{ latest.reviewer_note }}
+    {% endif %}
+    <div class="mt-1 text-muted small">Submit a new deliverable below to address the feedback.</div>
   </div>
   {% endif %}
 
-  <h4>Deliverables ({{ deliverables | length }})</h4>
-  {% if deliverables %}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Version</th><th>Submitted By</th><th>Status</th><th>Reviewer Note</th><th>Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for d in deliverables %}
-      <tr>
-        <td>v{{ d.version_number }}</td>
-        <td>{{ d.submitted_by }}</td>
-        <td><span class="badge badge-secondary">{{ d.status }}</span></td>
-        <td>{{ d.reviewer_note or '—' }}</td>
-        <td>{{ d.created_at.strftime('%Y-%m-%d %H:%M') if d.created_at else '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="text-muted">No deliverables submitted yet.</p>
+  {# ── Approval / Payout banner ── #}
+  {% if project.status == 'approved' %}
+  <div class="alert" style="background:#00c89622; border:1px solid #00c89666; color:#00c896;" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    <strong>Work Approved!</strong> Payout is being processed to your wallet.
+  </div>
+  {% elif project.status == 'paid_out' %}
+  <div class="alert" style="background:#00c89622; border:1px solid #00c89666; color:#00c896;" role="alert">
+    <i class="fas fa-coins me-2"></i>
+    <strong>Payout Released!</strong>
+    <a href="{{ url_for('bounty_collab.wallet_view') }}" class="ms-2 text-decoration-none" style="color:#00c896;">
+      View your wallet →
+    </a>
+  </div>
   {% endif %}
+
+  <div class="row g-4">
+
+    {# ── LEFT: Submit deliverable ── #}
+    <div class="col-lg-7">
+
+      {% if member and project.status in ['in_progress', 'revision_requested'] %}
+      <div class="card border-0 mb-4" style="background:#1a1f2e;">
+        <div class="card-body">
+          <h6 class="text-white mb-3">
+            <i class="fas fa-upload me-2"></i>
+            {% if project.status == 'revision_requested' %}Submit Revision{% else %}Submit Deliverable{% endif %}
+          </h6>
+
+          <div id="submitSuccess" class="alert" style="display:none; background:#00c89622; border:1px solid #00c89666; color:#00c896;">
+            <i class="fas fa-check-circle me-2"></i>Deliverable submitted! Awaiting partner review.
+          </div>
+          <div id="submitError" class="alert alert-danger" style="display:none;"></div>
+
+          <div class="mb-3">
+            <label class="form-label text-muted small">
+              Description / Summary <span class="text-danger">*</span>
+            </label>
+            <textarea id="delContent" class="form-control" rows="6"
+                      placeholder="Describe what you've completed, methodology used, and key findings..."
+                      style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted small">
+              <i class="fas fa-link me-1"></i>Link / File Reference <span class="text-muted">(optional)</span>
+            </label>
+            <input type="text" id="delFile" class="form-control"
+                   placeholder="e.g. https://github.com/yourrepo or Google Drive link"
+                   style="background:#0d1117; border-color:#333; color:#fff;">
+          </div>
+
+          <button id="submitBtn" class="btn btn-success w-100">
+            <i class="fas fa-paper-plane me-2"></i>
+            {% if project.status == 'revision_requested' %}Submit Revision{% else %}Submit for Review{% endif %}
+          </button>
+        </div>
+      </div>
+      {% elif project.status == 'submitted_for_review' %}
+      <div class="card border-0 mb-4" style="background:#1a1f2e;">
+        <div class="card-body text-center py-4">
+          <div style="font-size:2.5rem; color:#ffc107; margin-bottom:.5rem;"><i class="fas fa-hourglass-half"></i></div>
+          <h6 class="text-white">Submitted — Awaiting Review</h6>
+          <p class="text-muted small mb-0">The project partner is reviewing your work. You'll be notified if revision is needed.</p>
+        </div>
+      </div>
+      {% elif project.status == 'team_locked' %}
+      <div class="card border-0 mb-4" style="background:#1a1f2e;">
+        <div class="card-body text-center py-4">
+          <div style="font-size:2.5rem; color:#4f9eff; margin-bottom:.5rem;"><i class="fas fa-hourglass-start"></i></div>
+          <h6 class="text-white">Waiting for Partner to Start</h6>
+          <p class="text-muted small mb-0">The team is locked. The partner will kick off the project shortly.</p>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Deliverable history ── #}
+      <div class="card border-0" style="background:#1a1f2e;">
+        <div class="card-body">
+          <h6 class="text-white mb-3">
+            <i class="fas fa-history me-2"></i>Submission History
+            <span class="badge bg-secondary ms-1">{{ deliverables | length }}</span>
+          </h6>
+
+          {% if deliverables %}
+          {% for d in deliverables %}
+          <div class="mb-3 pb-3" style="border-bottom:1px solid #ffffff11;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-white fw-bold small">v{{ d.version_number }}</span>
+              {% if d.status == 'submitted' %}
+              <span class="badge" style="background:#ffc10722; color:#ffc107; font-size:.65rem;">Pending Review</span>
+              {% elif d.status == 'approved' %}
+              <span class="badge bg-success" style="font-size:.65rem;">Approved</span>
+              {% elif d.status == 'revision_requested' %}
+              <span class="badge bg-danger" style="font-size:.65rem;">Revision Needed</span>
+              {% endif %}
+            </div>
+            <div class="text-muted small mb-1">
+              {{ d.created_at.strftime('%d %b %Y, %H:%M') if d.created_at else '—' }}
+            </div>
+            {% if d.content %}
+            <div class="text-muted" style="font-size:.8rem; background:#0d111766; border-radius:4px; padding:6px 8px; max-height:100px; overflow-y:auto;">
+              {{ d.content }}
+            </div>
+            {% endif %}
+            {% if d.file_ref %}
+            <div class="mt-1">
+              <a href="{{ d.file_ref }}" target="_blank" style="font-size:.78rem; color:#4f9eff;">
+                <i class="fas fa-external-link-alt me-1"></i>{{ d.file_ref | truncate(50) }}
+              </a>
+            </div>
+            {% endif %}
+            {% if d.reviewer_note %}
+            <div class="mt-2 p-2" style="background:#dc354522; border-radius:4px; font-size:.78rem; color:#ff6b6b;">
+              <i class="fas fa-comment-alt me-1"></i><strong>Partner note:</strong> {{ d.reviewer_note }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          {% else %}
+          <p class="text-muted small mb-0">No deliverables submitted yet.</p>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+
+    {# ── RIGHT: Payout info + team ── #}
+    <div class="col-lg-5">
+
+      {% if member %}
+      <div class="card border-0 mb-3" style="background:#1a1f2e;">
+        <div class="card-body">
+          <h6 class="text-muted mb-3 text-uppercase small">Your Payout</h6>
+
+          <div class="text-center mb-3">
+            <div style="font-size:2rem; font-weight:700; color:#00c896;">
+              {{ member.payout_percentage }}%
+            </div>
+            <small class="text-muted">of researcher pool</small>
+          </div>
+
+          {% set budget_usd = project.budget_total / 100 %}
+          {% set pool = budget_usd * 0.9 %}
+          {% set my_payout = pool * (member.payout_percentage | float) / 100 %}
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Project budget</span>
+            <span class="text-white">${{ "%.2f"|format(budget_usd) }}</span>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-1">
+            <span>Researcher pool (90%)</span>
+            <span class="text-white">${{ "%.2f"|format(pool) }}</span>
+          </div>
+          <hr style="border-color:#ffffff11;">
+          <div class="d-flex justify-content-between small">
+            <span class="text-white fw-bold">Your estimated payout</span>
+            <span class="fw-bold" style="color:#00c896;">${{ "%.2f"|format(my_payout) }}</span>
+          </div>
+
+          {% if member.is_team_lead %}
+          <div class="mt-2 text-center">
+            <span class="badge" style="background:#8b5cf622; color:#8b5cf6;">Team Lead</span>
+          </div>
+          {% endif %}
+
+          {% if project.status in ['paid_out', 'closed'] %}
+          <div class="mt-3 text-center">
+            <a href="{{ url_for('bounty_collab.wallet_view') }}" class="btn btn-success btn-sm w-100">
+              <i class="fas fa-wallet me-1"></i>View My Wallet
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card border-0" style="background:#1a1f2e;">
+        <div class="card-body">
+          <h6 class="text-muted mb-3 text-uppercase small">Project Info</h6>
+          {% if project.scope_of_work %}
+          <p class="text-muted small">{{ project.scope_of_work | truncate(200) }}</p>
+          {% endif %}
+          {% if project.deliverables %}
+          <div class="mt-2">
+            <div class="text-muted" style="font-size:.72rem; text-transform:uppercase; font-weight:600; margin-bottom:4px;">Expected Deliverables</div>
+            <ul class="text-muted small ps-3 mb-0">
+              {% for d in project.deliverables.split('\n') if d.strip() %}
+              <li>{{ d.strip() }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% if project.application_deadline %}
+          <div class="mt-2 text-muted small">
+            <i class="fas fa-clock me-1"></i>Deadline: {{ project.application_deadline.strftime('%d %b %Y') }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>
 
 {% if member and project.status in ['in_progress', 'revision_requested'] %}
 <script>
-(function () {
-  document.getElementById("bntc-submit-deliverable").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var content = document.getElementById("deliverableContent").value;
-    var fileRef = document.getElementById("deliverableFile").value;
+(function() {
+  var CSRF = (window.init && window.init.csrfNonce) || "";
+  var btn = document.getElementById("submitBtn");
+  var errDiv = document.getElementById("submitError");
+  var okDiv = document.getElementById("submitSuccess");
+
+  btn.addEventListener("click", function() {
+    var content = (document.getElementById("delContent").value || "").trim();
+    var fileRef = (document.getElementById("delFile").value || "").trim();
+
+    errDiv.style.display = "none";
+    okDiv.style.display = "none";
+
+    if (!content && !fileRef) {
+      errDiv.textContent = "Please write a description or provide a link before submitting.";
+      errDiv.style.display = "block";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+
     fetch("/plugins/bounty-collab/projects/{{ project.id }}/deliverables", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "CSRF-Token": (window.init && init.csrfNonce) || ""
-      },
-      body: JSON.stringify({ content: content, file_ref: fileRef })
+      headers: { "Content-Type": "application/json", "CSRF-Token": CSRF },
+      body: JSON.stringify({ content: content, file_ref: fileRef || null })
     })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.id) { location.reload(); }
-        else { alert(JSON.stringify(d)); }
-      });
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(result) {
+      if (result.ok && result.data.id) {
+        okDiv.style.display = "block";
+        document.getElementById("delContent").value = "";
+        document.getElementById("delFile").value = "";
+        setTimeout(function() { location.reload(); }, 1500);
+      } else {
+        errDiv.textContent = result.data.error || result.data.description || "Submission failed. Please try again.";
+        errDiv.style.display = "block";
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit for Review';
+      }
+    })
+    .catch(function() {
+      errDiv.textContent = "Network error — please check your connection and try again.";
+      errDiv.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit for Review';
+    });
   });
 })();
 </script>

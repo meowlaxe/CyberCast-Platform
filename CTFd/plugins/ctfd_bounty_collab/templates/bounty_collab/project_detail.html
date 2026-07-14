@@ -1,101 +1,610 @@
 {# =============================================================================
-   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/project_detail.html
-   Plugin: ctfd_bounty_collab
-   Created: 2026-07-15  Author: Claude / CyberCast implementation
-   Purpose: Project detail page — public summary. NDA brief requires
-            separate /brief endpoint (owner / NDA accepted / team member).
+   File: templates/bounty_collab/project_detail.html
+   Modified: 2026-07-15 — Full lifecycle control for partners (publish, recruit,
+             close recruiting, reopen, lock team). Role-aware apply vs manage panels.
    ============================================================================= #}
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>{{ project.title }}</h2>
+<div class="container mt-4" style="max-width:900px;">
 
-  <div class="mb-2">
-    <span class="badge badge-secondary">{{ project.status }}</span>
-    {% if project.is_nda_required %}
-    <span class="badge badge-warning ml-1">NDA Required</span>
-    {% endif %}
-    {% if project.category %}
-    <span class="badge badge-info ml-1">{{ project.category }}</span>
+  {# ── Back link ── #}
+  <a href="{{ url_for('bounty_collab.project_list_view') }}" class="text-muted small mb-3 d-inline-block">
+    ← Back to Projects
+  </a>
+
+  {# ── Header ── #}
+  <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="mb-1 text-white">{{ project.title }}</h2>
+      <div class="d-flex gap-2 flex-wrap">
+        {% if project.category %}
+        <span class="badge" style="background:#0d6efd22; color:#4f9eff;">{{ project.category }}</span>
+        {% endif %}
+        {% set status_colors = {
+          'draft': 'secondary',
+          'published': 'success',
+          'recruiting': 'warning',
+          'applications_closed': 'info',
+          'team_locked': 'primary',
+          'in_progress': 'primary',
+          'submitted_for_review': 'warning',
+          'revision_requested': 'danger',
+          'approved': 'success',
+          'paid_out': 'success',
+          'disputed': 'danger',
+          'cancelled': 'secondary',
+          'closed': 'secondary'
+        } %}
+        <span class="badge bg-{{ status_colors.get(project.status, 'secondary') }}">
+          {{ project.status | replace('_', ' ') | title }}
+        </span>
+        {% if project.is_nda_required %}
+        <span class="badge" style="background:#ff980022; color:#ff9800;">NDA Required</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Partner lifecycle action buttons (owner only) ── #}
+    {% if is_owner %}
+    <div class="d-flex gap-2 flex-wrap">
+
+      {% if project.status == 'draft' %}
+      <button class="btn btn-success btn-sm" onclick="doAction('publish')">
+        <i class="fas fa-globe me-1"></i>Publish
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" disabled title="Already a draft">Unpublish</button>
+
+      {% elif project.status == 'published' %}
+      <button class="btn btn-warning btn-sm text-dark" onclick="doAction('recruit')">
+        <i class="fas fa-users me-1"></i>Open Recruiting
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="doAction('unpublish')" title="Move back to Draft">
+        Unpublish
+      </button>
+
+      {% elif project.status == 'recruiting' %}
+      <button class="btn btn-info btn-sm text-dark" onclick="doAction('close-recruiting')">
+        <i class="fas fa-door-closed me-1"></i>Close Recruiting
+      </button>
+
+      {% elif project.status == 'applications_closed' %}
+      <button class="btn btn-warning btn-sm text-dark" onclick="doAction('reopen-recruiting')">
+        <i class="fas fa-door-open me-1"></i>Re-open Recruiting
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="doAction('lock-team')"
+              title="Finalise team and lock the project">
+        <i class="fas fa-lock me-1"></i>Lock Team
+      </button>
+
+      {% elif project.status == 'team_locked' %}
+      <button class="btn btn-primary btn-sm" onclick="doAction('start')">
+        <i class="fas fa-play me-1"></i>Start Project
+      </button>
+
+      {% elif project.status == 'submitted_for_review' %}
+      <button class="btn btn-success btn-sm" onclick="doAction('review', {decision:'approve'})">
+        <i class="fas fa-check me-1"></i>Approve & Pay
+      </button>
+      <button class="btn btn-outline-warning btn-sm" onclick="requestRevision()">
+        <i class="fas fa-redo me-1"></i>Request Revision
+      </button>
+      {% endif %}
+
+      {# Cancel — only pre-lock #}
+      {% if project.status in ['draft', 'published', 'recruiting', 'applications_closed'] %}
+      <button class="btn btn-outline-danger btn-sm" onclick="doAction('cancel')">
+        Cancel Project
+      </button>
+      {% endif %}
+
+    </div>
     {% endif %}
   </div>
 
-  <dl class="row mt-3">
-    <dt class="col-sm-3">Problem Statement</dt>
-    <dd class="col-sm-9">{{ project.problem_statement }}</dd>
-
-    {% if project.scope_of_work %}
-    <dt class="col-sm-3">Scope of Work</dt>
-    <dd class="col-sm-9">{{ project.scope_of_work }}</dd>
-    {% endif %}
-
-    {% if project.required_expertise %}
-    <dt class="col-sm-3">Required Expertise</dt>
-    <dd class="col-sm-9">{{ project.required_expertise }}</dd>
-    {% endif %}
-
-    <dt class="col-sm-3">Team Size</dt>
-    <dd class="col-sm-9">{{ project.team_size_min }}–{{ project.team_size_max }} members</dd>
-
-    <dt class="col-sm-3">Budget</dt>
-    <dd class="col-sm-9">{{ project.budget_total }} cents</dd>
-
-    {% if project.research_duration_days %}
-    <dt class="col-sm-3">Duration</dt>
-    <dd class="col-sm-9">{{ project.research_duration_days }} days</dd>
-    {% endif %}
-
-    {% if project.application_deadline %}
-    <dt class="col-sm-3">Application Deadline</dt>
-    <dd class="col-sm-9">{{ project.application_deadline.strftime('%Y-%m-%d %H:%M UTC') }}</dd>
-    {% endif %}
-  </dl>
-
-  {% if project.is_nda_required %}
-  <div class="alert alert-info">
-    This project has a confidential brief. Accept the NDA to view full details.
-    <form method="post" action="{{ url_for('bounty_collab.accept_nda', project_id=project.id) }}" class="d-inline">
-      <input type="hidden" name="nonce" value="{{ nonce }}">
-      <button class="btn btn-sm btn-outline-primary ml-2">Accept NDA &amp; View Brief</button>
-    </form>
+  {# ── Status progress bar (partner view) ── #}
+  {% if is_owner %}
+  <div class="mb-4">
+    {% set stages = ['draft','published','recruiting','applications_closed','team_locked','in_progress','submitted_for_review','approved','paid_out','closed'] %}
+    {% set current_idx = stages.index(project.status) if project.status in stages else 0 %}
+    <div class="d-flex gap-1 align-items-center" style="font-size:.7rem; color:#888; overflow-x:auto;">
+      {% for s in stages %}
+      <div class="text-center" style="min-width:70px;">
+        <div class="rounded-circle mx-auto mb-1" style="
+          width:10px; height:10px;
+          background: {{ '#00c896' if loop.index0 <= current_idx else '#333' }};
+        "></div>
+        <div style="color: {{ '#ccc' if loop.index0 == current_idx else '#555' }}; font-weight: {{ 'bold' if loop.index0 == current_idx else 'normal' }};">
+          {{ s | replace('_', ' ') | title }}
+        </div>
+      </div>
+      {% if not loop.last %}
+      <div style="flex:1; height:1px; background:#333; min-width:10px;"></div>
+      {% endif %}
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 
-  {% if project.status in ['published', 'recruiting'] %}
-  <div class="mt-3">
-    {% if applied %}
-    <div class="alert alert-success">You have applied to this project (status: {{ applied.status }}).</div>
-    {% else %}
-    <button class="btn btn-success" id="bntc-apply-btn">Apply Now</button>
-    {% endif %}
+  <div class="row g-4">
+
+    {# ── LEFT: Project details ── #}
+    <div class="col-lg-7">
+
+      <div class="card border-0 mb-3" style="background:#1a1f2e;">
+        <div class="card-body">
+          <h6 class="text-muted mb-2 text-uppercase small">Problem Statement</h6>
+          <p class="text-white">{{ project.problem_statement }}</p>
+
+          {% if project.scope_of_work %}
+          <hr style="border-color:#ffffff11;">
+          <h6 class="text-muted mb-2 text-uppercase small">Scope of Work</h6>
+          <p class="text-white">{{ project.scope_of_work }}</p>
+          {% endif %}
+
+          {% if project.deliverables %}
+          <hr style="border-color:#ffffff11;">
+          <h6 class="text-muted mb-2 text-uppercase small">Expected Deliverables</h6>
+          <ul class="text-white ps-3">
+            {% for d in project.deliverables.split('\n') if d.strip() %}
+            <li>{{ d.strip() }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+
+          {% if project.required_expertise %}
+          <hr style="border-color:#ffffff11;">
+          <h6 class="text-muted mb-2 text-uppercase small">Required Expertise</h6>
+          <div>
+            {% for tag in project.required_expertise.split(',') %}
+            <span class="badge me-1 mb-1" style="background:#ffffff11; color:#ccc;">{{ tag.strip() }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    {# ── RIGHT: Budget / meta / apply / manage ── #}
+    <div class="col-lg-5">
+
+      {# Budget card #}
+      <div class="card border-0 mb-3" style="background:#1a1f2e;">
+        <div class="card-body">
+          <div class="text-center mb-3">
+            <div style="font-size:2rem; font-weight:700; color:#00c896;">
+              ${{ "%.2f"|format(budget_usd) }}
+            </div>
+            <small class="text-muted">Total Research Budget</small>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span>Platform fee (10%)</span>
+            <span>${{ "%.2f"|format(budget_usd * 0.1) }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-3">
+            <span class="text-white">Researcher payout (90%)</span>
+            <span class="text-success fw-bold">${{ "%.2f"|format(budget_usd * 0.9) }}</span>
+          </div>
+          <hr style="border-color:#ffffff11;">
+          <div class="row text-center">
+            <div class="col">
+              <div class="text-white fw-bold">{{ project.team_size_min }}–{{ project.team_size_max }}</div>
+              <small class="text-muted">Team Size</small>
+            </div>
+            {% if project.research_duration_days %}
+            <div class="col">
+              <div class="text-white fw-bold">{{ project.research_duration_days }}</div>
+              <small class="text-muted">Days</small>
+            </div>
+            {% endif %}
+            {% if project.application_deadline %}
+            <div class="col">
+              <div class="text-white fw-bold">{{ project.application_deadline.strftime('%d %b') }}</div>
+              <small class="text-muted">Deadline</small>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {# ══════════════════════════════════════════════════════ #}
+      {# EXPERT SIDE — apply form / application status         #}
+      {# ══════════════════════════════════════════════════════ #}
+      {% if not is_owner %}
+
+        {% if user_role == 'student' %}
+        <div class="alert" style="background:#ff980022; border:1px solid #ff980044; color:#ff9800;">
+          <i class="fas fa-lock me-2"></i>Bounty projects are for University Experts and Company Partners only.
+        </div>
+
+        {% elif applied %}
+          {# Already applied — show status #}
+          <div class="card border-0 mb-3" style="background:#1a1f2e;">
+            <div class="card-body text-center py-4">
+              {% if applied.status == 'pending' %}
+              <div class="mb-2" style="color:#ffc107; font-size:2rem;"><i class="fas fa-clock"></i></div>
+              <h6 class="text-white">Application Submitted</h6>
+              <p class="text-muted small mb-0">Your application is under review. The project owner will contact you once a decision is made.</p>
+              <span class="badge mt-2" style="background:#ffc10722; color:#ffc107;">Pending Review</span>
+
+              {% elif applied.status == 'shortlisted' %}
+              <div class="mb-2" style="color:#4f9eff; font-size:2rem;"><i class="fas fa-star"></i></div>
+              <h6 class="text-white">You've Been Shortlisted!</h6>
+              <p class="text-muted small mb-0">You're on the shortlist. Final selection is pending.</p>
+              <span class="badge mt-2 bg-info">Shortlisted</span>
+
+              {% elif applied.status == 'accepted' %}
+              <div class="mb-2" style="color:#00c896; font-size:2rem;"><i class="fas fa-check-circle"></i></div>
+              <h6 class="text-white">Application Accepted!</h6>
+              <p class="text-muted small mb-0">Congratulations! You've been accepted to the research team.</p>
+              <span class="badge mt-2 bg-success">Accepted</span>
+              <div class="mt-2">
+                <a href="{{ url_for('bounty_collab.team_workspace_view', project_id=project.id) }}"
+                   class="btn btn-success btn-sm">Open Workspace →</a>
+              </div>
+
+              {% elif applied.status == 'rejected' %}
+              <div class="mb-2" style="color:#dc3545; font-size:2rem;"><i class="fas fa-times-circle"></i></div>
+              <h6 class="text-white">Application Not Selected</h6>
+              <p class="text-muted small mb-0">Thank you for applying. This project has selected other candidates.</p>
+              <span class="badge mt-2 bg-danger">Not Selected</span>
+
+              {% elif applied.status == 'withdrawn' %}
+              <span class="badge bg-secondary">Withdrawn</span>
+              {% endif %}
+            </div>
+          </div>
+
+        {% elif is_team_member %}
+          <div class="card border-0 mb-3" style="background:#1a1f2e;">
+            <div class="card-body text-center">
+              <i class="fas fa-users text-success mb-2" style="font-size:1.5rem;"></i>
+              <h6 class="text-white">You're on the Team</h6>
+              <a href="{{ url_for('bounty_collab.team_workspace_view', project_id=project.id) }}"
+                 class="btn btn-success btn-sm mt-2">Open Workspace</a>
+            </div>
+          </div>
+
+        {% elif project.status in ['published', 'recruiting', 'applications_closed'] %}
+          {# Apply form — individual expert application #}
+          <div class="card border-0 mb-3" style="background:#1a1f2e;">
+            <div class="card-body">
+              <h6 class="text-white mb-1"><i class="fas fa-paper-plane me-2"></i>Apply for This Project</h6>
+              <p class="text-muted small mb-3">Individual applications only. Tell the project owner why you're the right expert.</p>
+              {% if project.status == 'applications_closed' %}
+              <div class="alert alert-info py-2 small mb-3" style="background:#17a2b822; border-color:#17a2b844;">
+                <i class="fas fa-info-circle me-1"></i>
+                Applications are being reviewed. You can still submit — the partner may re-open recruiting.
+              </div>
+              {% endif %}
+              <div id="applyError" class="alert alert-danger py-2 small mb-3" style="display:none;"></div>
+              <div class="mb-3">
+                <label class="form-label text-muted small">Cover Note <span class="text-danger">*</span></label>
+                <textarea class="form-control form-control-sm" id="applyCoverNote" rows="4"
+                          placeholder="Describe your relevant expertise, past projects, and what you'll contribute..."
+                          style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+              </div>
+              {% if project.is_nda_required %}
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="ndaCheck">
+                <label class="form-check-label text-muted small" for="ndaCheck">
+                  I agree to keep project details confidential (NDA)
+                </label>
+              </div>
+              {% endif %}
+              <button class="btn btn-primary w-100" id="bntc-apply-btn">
+                <i class="fas fa-paper-plane me-2"></i>Submit Application
+              </button>
+            </div>
+          </div>
+
+        {% else %}
+          <div class="alert" style="background:#ffffff11; border:none; color:#888;">
+            <i class="fas fa-lock me-2"></i>
+            This project is no longer accepting applications ({{ project.status | replace('_',' ') | title }}).
+          </div>
+        {% endif %}
+
+      {% endif %}{# end not is_owner #}
+
+      {# ══════════════════════════════════════════════════════ #}
+      {# PARTNER MANAGEMENT PANEL (owner only)                  #}
+      {# ══════════════════════════════════════════════════════ #}
+      {% if is_owner %}
+      <div class="card border-0 mb-3" style="background:#1a1f2e;">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="text-white mb-0">
+              <i class="fas fa-tasks me-2"></i>Applications
+              {% if applications %}
+              <span class="badge bg-primary ms-1">{{ applications | length }}</span>
+              {% endif %}
+            </h6>
+            {% if applications %}
+            <a href="{{ url_for('bounty_collab.export_applications_csv', project_id=project.id) }}"
+               class="btn btn-outline-secondary btn-sm" title="Download all applicants as CSV">
+              <i class="fas fa-file-csv me-1"></i>Export CSV
+            </a>
+            {% endif %}
+          </div>
+
+          {% if applications %}
+          {% set pending_count = applications | selectattr('status', 'equalto', 'pending') | list | length %}
+          {% set shortlisted_count = applications | selectattr('status', 'equalto', 'shortlisted') | list | length %}
+          {% set accepted_count = applications | selectattr('status', 'equalto', 'accepted') | list | length %}
+          <div class="d-flex gap-3 mb-3 text-center">
+            <div>
+              <div class="fw-bold text-warning">{{ pending_count }}</div>
+              <small class="text-muted">Pending</small>
+            </div>
+            <div>
+              <div class="fw-bold text-info">{{ shortlisted_count }}</div>
+              <small class="text-muted">Shortlisted</small>
+            </div>
+            <div>
+              <div class="fw-bold text-success">{{ accepted_count }}</div>
+              <small class="text-muted">Accepted</small>
+            </div>
+          </div>
+
+          <div class="list-group list-group-flush">
+            {% for app in applications %}
+            {% set detail = applicant_details.get(app.id, {}) %}
+            <div class="list-group-item px-0 py-3" style="background:transparent; border-color:#ffffff11;">
+
+              {# Applicant header #}
+              <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                <div>
+                  <div class="text-white fw-bold">
+                    <i class="fas fa-user-circle me-1 text-muted"></i>
+                    {{ detail.name or ('User #' ~ app.applicant_id) }}
+                    {% if detail.profile_url %}
+                    <a href="{{ detail.profile_url }}" target="_blank" class="ms-1" style="font-size:.75rem; color:#4f9eff;">
+                      <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    {% endif %}
+                  </div>
+                  {% if detail.institution %}
+                  <div class="text-muted" style="font-size:.75rem;">
+                    <i class="fas fa-university me-1"></i>{{ detail.institution }}
+                    {% if detail.credential_id %}
+                    <span class="ms-1 text-muted">({{ detail.credential_id }})</span>
+                    {% endif %}
+                  </div>
+                  {% endif %}
+                  {% if detail.email %}
+                  <div class="text-muted" style="font-size:.72rem;">
+                    <i class="fas fa-envelope me-1"></i>{{ detail.email }}
+                  </div>
+                  {% endif %}
+                  <div class="text-muted" style="font-size:.7rem;">
+                    Applied {{ app.created_at.strftime('%d %b %Y') if app.created_at else '' }}
+                  </div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-1">
+                  {% if app.status == 'pending' %}
+                    <span class="badge" style="background:#ffc10722; color:#ffc107; font-size:.65rem;">Pending</span>
+                  {% elif app.status == 'shortlisted' %}
+                    <span class="badge bg-info" style="font-size:.65rem;">Shortlisted</span>
+                  {% elif app.status == 'accepted' %}
+                    <span class="badge bg-success" style="font-size:.65rem;">Accepted</span>
+                  {% elif app.status == 'rejected' %}
+                    <span class="badge bg-danger" style="font-size:.65rem;">Rejected</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              {# Expertise tags #}
+              {% if detail.expertise_areas %}
+              <div class="mb-2">
+                {% for tag in detail.expertise_areas.split(',') %}
+                <span class="badge me-1" style="background:#4f9eff22; color:#4f9eff; font-size:.65rem;">
+                  {{ tag.strip() }}
+                </span>
+                {% endfor %}
+              </div>
+              {% endif %}
+
+              {# Bio #}
+              {% if detail.bio %}
+              <div class="mb-2" style="background:#0d111788; border-radius:6px; padding:8px 10px;">
+                <div class="text-muted" style="font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;">Background</div>
+                <div class="text-white" style="font-size:.78rem; line-height:1.5;">{{ detail.bio }}</div>
+              </div>
+              {% endif %}
+
+              {# Cover note #}
+              {% if app.cover_note %}
+              <div class="mb-2" style="background:#0d111788; border-radius:6px; padding:8px 10px;">
+                <div class="text-muted" style="font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px;">Cover Note</div>
+                <div class="text-muted" style="font-size:.78rem; line-height:1.5; max-height:80px; overflow-y:auto;">{{ app.cover_note }}</div>
+              </div>
+              {% endif %}
+
+              {# Action buttons #}
+              <div class="d-flex gap-1 flex-wrap">
+                {% if app.status in ['pending', 'shortlisted'] %}
+                  {% if app.status == 'pending' %}
+                  <button class="btn btn-xs btn-outline-info" style="font-size:.7rem; padding:2px 8px;"
+                          onclick="reviewApp({{ app.id }}, 'shortlisted')">
+                    <i class="fas fa-star me-1"></i>Shortlist
+                  </button>
+                  {% endif %}
+                  <button class="btn btn-xs btn-outline-success" style="font-size:.7rem; padding:2px 8px;"
+                          onclick="reviewApp({{ app.id }}, 'accepted')">
+                    <i class="fas fa-check me-1"></i>Accept
+                  </button>
+                  <button class="btn btn-xs btn-outline-danger" style="font-size:.7rem; padding:2px 8px;"
+                          onclick="reviewApp({{ app.id }}, 'rejected')">
+                    <i class="fas fa-times me-1"></i>Reject
+                  </button>
+                {% endif %}
+              </div>
+
+            </div>
+            {% endfor %}
+          </div>
+
+          {# Lock team CTA #}
+          {% if project.status == 'applications_closed' and accepted_count > 0 %}
+          <hr style="border-color:#ffffff11;">
+          <button class="btn btn-primary btn-sm w-100 mt-2" onclick="doAction('lock-team')">
+            <i class="fas fa-lock me-1"></i>Lock Team ({{ accepted_count }} accepted) & Proceed
+          </button>
+          {% endif %}
+
+          {% else %}
+          <p class="text-muted small mb-0">No applications yet.</p>
+          {% endif %}
+
+        </div>
+      </div>
+      {% endif %}
+
+    </div>{# end right col #}
+  </div>{# end row #}
+</div>
+
+{# ── Revision request modal ── #}
+<div class="modal fade" id="revisionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:#1a1f2e; border-color:#333;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-white">Request Revision</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="revisionNote" class="form-control" rows="4"
+                  placeholder="Explain what needs to be revised..."
+                  style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-warning" onclick="submitRevision()">Send Revision Request</button>
+      </div>
+    </div>
   </div>
-  {% endif %}
 </div>
 
 <script>
-(function () {
-  var btn = document.getElementById("bntc-apply-btn");
-  if (!btn) return;
-  btn.addEventListener("click", function () {
-    fetch("{{ url_for('bounty_collab.apply_to_project', project_id=project.id) }}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "CSRF-Token": (window.init && init.csrfNonce) || ""
-      },
-      body: JSON.stringify({})
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.id) {
-          btn.disabled = true;
-          btn.textContent = "Applied ✓";
-        } else {
-          alert(d.message || JSON.stringify(d));
-        }
-      });
+var PROJECT_ID = {{ project.id }};
+var CSRF = (window.init && window.init.csrfNonce) || "";
+
+function apiCall(url, body, method) {
+  return fetch(url, {
+    method: method || "POST",
+    headers: { "Content-Type": "application/json", "CSRF-Token": CSRF },
+    body: body !== undefined ? JSON.stringify(body) : undefined
+  })
+  .then(function(r) {
+    return r.json().then(function(d) { return { ok: r.ok, data: d }; });
   });
-})();
+}
+
+function doAction(action, body) {
+  var base = "/plugins/bounty-collab/projects/" + PROJECT_ID;
+  var url = base + "/" + action;
+  var method = "POST";
+
+  if (action === "review") { method = "PATCH"; }
+
+  if (action === "cancel") {
+    if (!confirm("Cancel this project? This cannot be undone.")) return;
+  }
+
+  apiCall(url, body, method)
+  .then(function(result) {
+    if (result.ok) {
+      if (action === "cancel") {
+        window.location.href = "/plugins/bounty-collab/";
+      } else {
+        location.reload();
+      }
+    } else {
+      alert("Error: " + (result.data.error || result.data.description || JSON.stringify(result.data)));
+    }
+  })
+  .catch(function(e) { alert("Network error — please try again."); });
+}
+
+function reviewApp(appId, newStatus) {
+  apiCall("/plugins/bounty-collab/applications/" + appId, { status: newStatus }, "PATCH")
+  .then(function(result) {
+    if (result.ok) { location.reload(); }
+    else { alert("Error: " + (result.data.error || result.data.description || "Unknown error")); }
+  });
+}
+
+function requestRevision() {
+  new bootstrap.Modal(document.getElementById("revisionModal")).show();
+}
+
+function submitRevision() {
+  var note = (document.getElementById("revisionNote").value || "").trim();
+  if (!note) { alert("Please describe what needs to be revised."); return; }
+  apiCall("/plugins/bounty-collab/projects/" + PROJECT_ID + "/review",
+          { decision: "revision_requested", note: note }, "PATCH")
+  .then(function(result) {
+    if (result.ok) { location.reload(); }
+    else { alert("Error: " + (result.data.error || result.data.description)); }
+  });
+}
+
+{% if not is_owner %}
+var applyBtn = document.getElementById("bntc-apply-btn");
+var applyError = document.getElementById("applyError");
+
+function showApplyError(msg) {
+  if (!applyError) return;
+  applyError.textContent = msg;
+  applyError.style.display = "block";
+  if (applyBtn) {
+    applyBtn.disabled = false;
+    applyBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Application';
+  }
+}
+
+if (applyBtn) {
+  applyBtn.addEventListener("click", function() {
+    applyError.style.display = "none";
+
+    {% if project.is_nda_required %}
+    if (!document.getElementById("ndaCheck").checked) {
+      showApplyError("Please confirm you agree to the NDA terms before applying.");
+      return;
+    }
+    {% endif %}
+
+    var coverNote = document.getElementById("applyCoverNote").value.trim();
+    if (!coverNote) {
+      showApplyError("Please write a cover note explaining why you're a good fit.");
+      return;
+    }
+
+    applyBtn.disabled = true;
+    applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+
+    fetch("/plugins/bounty-collab/projects/" + PROJECT_ID + "/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "CSRF-Token": CSRF },
+      body: JSON.stringify({ cover_note: coverNote })
+    })
+    .then(function(r) {
+      return r.json().then(function(d) { return { ok: r.ok, data: d }; });
+    })
+    .then(function(result) {
+      if (result.ok && result.data.id) {
+        location.reload();
+      } else {
+        showApplyError(result.data.error || result.data.message || "Submission failed. Please try again.");
+      }
+    })
+    .catch(function() {
+      showApplyError("Network error. Please check your connection and try again.");
+    });
+  });
+}
+{% endif %}
 </script>
 {% endblock %}

@@ -2,14 +2,46 @@
 # File: CTFd/plugins/ctfd_bounty_collab/models.py
 # Plugin: ctfd_bounty_collab
 # Created: 2026-07-15  Author: Claude / CyberCast implementation
+# Modified: 2026-07-15  — Added CollabUserProfile for 3-role system
+#           Roles: student | expert | partner
+#           student  = no bounty access
+#           expert   = university researcher, can view + apply
+#           partner  = company, can post + manage + control lifecycle
 # Purpose: All ORM models for the bounty-collab plugin. Table prefix: bntc_
-#          No wallet model exists in ctfd_monetization (confirmed by reading
-#          ctfd_monetization/models.py), so bntc_wallets is created here.
 # =============================================================================
 
 import datetime
 
 from CTFd.models import db
+
+
+class CollabUserProfile(db.Model):
+    """Role profile created when a user first enters the bounty system.
+    Stores which actor type they are: student, expert, or partner.
+    """
+
+    __tablename__ = "bntc_user_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    # student | expert | partner
+    role = db.Column(db.String(16), nullable=False)
+    # Institution name — university for experts, company for partners
+    institution = db.Column(db.String(256))
+    # Expert credential fields (filled at signup, shown to partners when reviewing applications)
+    bio = db.Column(db.Text)                        # brief self-description
+    expertise_areas = db.Column(db.String(512))     # comma-separated tags
+    profile_url = db.Column(db.String(512))         # LinkedIn / ResearchGate / personal site
+    credential_id = db.Column(db.String(128))       # staff/student ID or employee number
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    def __repr__(self):
+        return f"<CollabUserProfile user={self.user_id} role={self.role}>"
 
 
 class CollabProject(db.Model):

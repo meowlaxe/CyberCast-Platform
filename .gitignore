@@ -81,3 +81,7 @@ node_modules/
 
 # Flask Profiler files
 flask_profiler.sql
+
+# Claude Code local settings
+.claude/
+.memory/

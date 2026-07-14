@@ -1,0 +1,268 @@
+{# =============================================================================
+   File: templates/bounty_collab/role_select.html
+   Created: 2026-07-15 — Role selection + credential capture
+   Modified: 2026-07-15 — Expert: credential form (no key). Partner: admin key only.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5" style="max-width:820px;">
+
+  <div class="text-center mb-5">
+    <div style="font-size:2.5rem; margin-bottom:.5rem;">🎯</div>
+    <h2 class="text-white mb-1">Who are you on CyberCast?</h2>
+    <p class="text-muted">
+      Select your role — this controls what you can do on the platform.
+      {% if existing %}
+      <br><small>Current role: <strong class="text-info">{{ existing.role | title }}</strong>
+      — you can update your details below.</small>
+      {% else %}
+      You only need to do this once.
+      {% endif %}
+    </p>
+  </div>
+
+  {% if error %}
+  <div class="alert alert-danger mb-4">
+    <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+  </div>
+  {% endif %}
+
+  {# ── Role cards ── #}
+  <div class="row g-3 mb-4" id="roleCards">
+
+    <div class="col-md-4">
+      <div class="role-card card h-100 border-0 text-center p-4"
+           data-role="student"
+           style="background:#1a1f2e; cursor:pointer; transition:all .2s; border:2px solid transparent !important;">
+        <div style="font-size:2.5rem; margin-bottom:.75rem;">🎓</div>
+        <h5 class="text-white mb-2">Student</h5>
+        <p class="text-muted small mb-3">
+          Access CTF challenges and learning content.<br>
+          Bounty projects are not part of the student track.
+        </p>
+        <div class="mt-auto pt-2">
+          <span class="badge bg-secondary small">No credentials needed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="role-card card h-100 border-0 text-center p-4"
+           data-role="expert"
+           style="background:#1a1f2e; cursor:pointer; transition:all .2s; border:2px solid transparent !important;">
+        <div style="font-size:2.5rem; margin-bottom:.75rem;">🔬</div>
+        <h5 class="text-white mb-2">University Expert</h5>
+        <p class="text-muted small mb-3">
+          University researcher or academic staff who can take on
+          industry-funded research projects.
+        </p>
+        <ul class="text-muted small text-start list-unstyled mb-3">
+          <li><i class="fas fa-check text-success me-1"></i> Browse & apply for projects</li>
+          <li><i class="fas fa-check text-success me-1"></i> Earn research payouts</li>
+        </ul>
+        <div class="mt-auto pt-2">
+          <span class="badge" style="background:#4f9eff22; color:#4f9eff; font-size:.7rem;">
+            Fill in your credentials below
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="role-card card h-100 border-0 text-center p-4"
+           data-role="partner"
+           style="background:#1a1f2e; cursor:pointer; transition:all .2s; border:2px solid transparent !important;">
+        <div style="font-size:2.5rem; margin-bottom:.75rem;">🏢</div>
+        <h5 class="text-white mb-2">Company Partner</h5>
+        <p class="text-muted small mb-3">
+          Industry company that commissions university researchers
+          for applied research and R&D projects.
+        </p>
+        <ul class="text-muted small text-start list-unstyled mb-3">
+          <li><i class="fas fa-check text-success me-1"></i> Post bounty projects</li>
+          <li><i class="fas fa-check text-success me-1"></i> Select & pay researchers</li>
+        </ul>
+        <div class="mt-auto pt-2">
+          <span class="badge" style="background:#ff980022; color:#ff9800; font-size:.7rem;">
+            Admin access key required
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# ═══════════════════════════════════════════════════════════
+     EXPERT CREDENTIAL FORM (shown when Expert card is selected)
+     ═══════════════════════════════════════════════════════════ #}
+  <div id="expertForm" style="display:none;">
+    <div class="card border-0 p-4 mb-4" style="background:#1a1f2e; border-left:3px solid #4f9eff !important;">
+      <h6 class="text-info mb-3"><i class="fas fa-id-badge me-2"></i>Expert Credentials</h6>
+      <p class="text-muted small mb-3">
+        These details are shown to company partners when reviewing your application.
+        Stronger credentials = higher chance of being selected.
+      </p>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label text-muted small">University / Institution <span class="text-danger">*</span></label>
+          <input type="text" id="e_institution" class="form-control cc-input"
+                 placeholder="e.g. Universiti Malaya"
+                 value="{{ existing.institution or '' if existing and existing.role == 'expert' else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-muted small">Staff / Student ID <span class="text-danger">*</span></label>
+          <input type="text" id="e_credential_id" class="form-control cc-input"
+                 placeholder="e.g. UM2024/12345"
+                 value="{{ existing.credential_id or '' if existing and existing.role == 'expert' else '' }}">
+          <div class="form-text text-muted" style="font-size:.7rem;">
+            Used to verify you are affiliated with the institution.
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-muted small">Areas of Expertise <span class="text-danger">*</span></label>
+          <input type="text" id="e_expertise" class="form-control cc-input"
+                 placeholder="e.g. Cybersecurity, Machine Learning, IoT Security"
+                 value="{{ existing.expertise_areas or '' if existing and existing.role == 'expert' else '' }}">
+          <div class="form-text text-muted" style="font-size:.7rem;">Comma-separated — helps partners find the right fit.</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-muted small">Brief Bio / Research Background</label>
+          <textarea id="e_bio" class="form-control cc-input" rows="3"
+                    placeholder="Briefly describe your research background, past projects, and relevant qualifications...">{{ existing.bio or '' if existing and existing.role == 'expert' else '' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label text-muted small">LinkedIn / ResearchGate / Portfolio URL</label>
+          <input type="url" id="e_profile_url" class="form-control cc-input"
+                 placeholder="https://linkedin.com/in/yourprofile"
+                 value="{{ existing.profile_url or '' if existing and existing.role == 'expert' else '' }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ═══════════════════════════════════════════════════════════
+     PARTNER FORM (shown when Partner card is selected)
+     ═══════════════════════════════════════════════════════════ #}
+  <div id="partnerForm" style="display:none;">
+    <div class="card border-0 p-4 mb-4" style="background:#1a1f2e; border-left:3px solid #ff9800 !important;">
+      <h6 class="text-warning mb-3"><i class="fas fa-building me-2"></i>Company Details</h6>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label text-muted small">Company Name <span class="text-danger">*</span></label>
+          <input type="text" id="p_institution" class="form-control cc-input"
+                 placeholder="e.g. TechCorp Sdn Bhd"
+                 value="{{ existing.institution or '' if existing and existing.role == 'partner' else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label text-muted small">
+            <i class="fas fa-key me-1"></i>Partner Access Key <span class="text-danger">*</span>
+          </label>
+          <input type="password" id="p_access_key" class="form-control cc-input"
+                 placeholder="Obtain this key from the platform admin">
+          <div class="form-text text-muted" style="font-size:.7rem;">
+            Contact the CyberCast admin to get your company access key.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Save button — hidden until a role is selected #}
+  <div id="saveWrap" style="display:none;" class="text-center">
+    <button id="saveRoleBtn" class="btn btn-primary btn-lg px-5">
+      <i class="fas fa-save me-2"></i>Save & Continue
+    </button>
+  </div>
+
+</div>
+
+<style>
+.role-card:hover { transform:translateY(-3px); border-color:#4f9eff !important; }
+.role-card.selected { border-color:#00c896 !important; background:#1a2e28 !important; }
+.cc-input { background:#0d1117; border-color:#333; color:#fff; }
+.cc-input:focus { background:#0d1117; border-color:#4f9eff; color:#fff; box-shadow:0 0 0 2px #4f9eff33; }
+.cc-input::placeholder { color:#555; }
+</style>
+
+<script>
+var selectedRole = "{{ existing.role if existing else '' }}";
+
+if (selectedRole) {
+  var cur = document.querySelector('[data-role="' + selectedRole + '"]');
+  if (cur) { cur.classList.add('selected'); showFormFor(selectedRole); }
+}
+
+document.querySelectorAll('.role-card').forEach(function(card) {
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.role-card').forEach(function(c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+    selectedRole = card.dataset.role;
+    showFormFor(selectedRole);
+  });
+});
+
+function showFormFor(role) {
+  document.getElementById('expertForm').style.display  = (role === 'expert')  ? 'block' : 'none';
+  document.getElementById('partnerForm').style.display = (role === 'partner') ? 'block' : 'none';
+  document.getElementById('saveWrap').style.display = 'block';
+}
+
+document.getElementById('saveRoleBtn').addEventListener('click', function() {
+  if (!selectedRole) { alert('Please select a role first.'); return; }
+
+  var payload = { role: selectedRole, institution: '', access_key: '',
+                  bio: '', expertise_areas: '', profile_url: '', credential_id: '' };
+
+  if (selectedRole === 'expert') {
+    payload.institution    = (document.getElementById('e_institution').value  || '').trim();
+    payload.credential_id  = (document.getElementById('e_credential_id').value || '').trim();
+    payload.expertise_areas= (document.getElementById('e_expertise').value    || '').trim();
+    payload.bio            = (document.getElementById('e_bio').value          || '').trim();
+    payload.profile_url    = (document.getElementById('e_profile_url').value  || '').trim();
+
+    if (!payload.institution) { alert('Please enter your university / institution name.'); return; }
+    if (!payload.credential_id) { alert('Please enter your staff or student ID.'); return; }
+    if (!payload.expertise_areas) { alert('Please enter at least one area of expertise.'); return; }
+  }
+
+  if (selectedRole === 'partner') {
+    payload.institution = (document.getElementById('p_institution').value || '').trim();
+    payload.access_key  = (document.getElementById('p_access_key').value  || '').trim();
+
+    if (!payload.institution) { alert('Please enter your company name.'); return; }
+    if (!payload.access_key)  { alert('Please enter your Partner access key.'); return; }
+  }
+
+  var btn = document.getElementById('saveRoleBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+
+  fetch('/plugins/bounty-collab/setup-role', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+               'CSRF-Token': (window.init && window.init.csrfNonce) || '' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.role) {
+      // Clear nav role cache so the nav updates immediately after role selection
+      try { sessionStorage.removeItem('bntc_role'); } catch(e) {}
+      window.location.href = selectedRole === 'student' ? '/' : '/plugins/bounty-collab/';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-2"></i>Save & Continue';
+      alert(d.error || 'Something went wrong, please try again.');
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save me-2"></i>Save & Continue';
+    alert('Network error, please try again.');
+  });
+});
+</script>
+{% endblock %}

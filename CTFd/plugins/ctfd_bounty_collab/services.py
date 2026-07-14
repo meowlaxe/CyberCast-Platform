@@ -31,8 +31,9 @@ from .models import (
 # Maps current_status -> set of statuses reachable from it
 VALID_TRANSITIONS: dict = {
     "draft": {"published", "cancelled"},
-    "published": {"recruiting", "cancelled"},
-    "recruiting": {"team_locked", "cancelled"},
+    "published": {"recruiting", "draft", "cancelled"},   # draft = unpublish
+    "recruiting": {"applications_closed", "cancelled"},
+    "applications_closed": {"team_locked", "recruiting"},  # can re-open or lock
     "team_locked": {"in_progress"},
     "in_progress": {"submitted_for_review"},
     "submitted_for_review": {"approved", "revision_requested", "disputed"},
@@ -48,8 +49,11 @@ VALID_TRANSITIONS: dict = {
 # Values: "owner" | "team" | "system" | "admin" | "owner_or_team"
 TRANSITION_ROLES: dict = {
     ("draft", "published"): "owner",
+    ("published", "draft"): "owner",          # unpublish
     ("published", "recruiting"): "owner",
-    ("recruiting", "team_locked"): "owner",   # additional escrow check in lock_team()
+    ("recruiting", "applications_closed"): "owner",  # partner closes recruiting
+    ("applications_closed", "recruiting"): "owner",  # partner re-opens recruiting
+    ("applications_closed", "team_locked"): "owner",
     ("team_locked", "in_progress"): "owner",
     ("in_progress", "submitted_for_review"): "team",
     ("submitted_for_review", "approved"): "owner",
@@ -62,11 +66,12 @@ TRANSITION_ROLES: dict = {
     ("disputed", "cancelled"): "admin",
     ("published", "cancelled"): "owner",
     ("recruiting", "cancelled"): "owner",
+    ("applications_closed", "cancelled"): "owner",
     ("draft", "cancelled"): "owner",
 }
 
 # Pre-lock states where cancellation is allowed
-CANCELLABLE_STATES = {"draft", "published", "recruiting"}
+CANCELLABLE_STATES = {"draft", "published", "recruiting", "applications_closed"}
 
 # States that freeze budget, scope, and deliverables
 EDIT_LOCKED_STATES = {
@@ -199,10 +204,10 @@ def fund_escrow(project: CollabProject, amount_cents: int, actor) -> CollabEscro
     amount_cents: total budget in cents.
     Does NOT commit — callers commit.
     """
-    if project.status != "recruiting":
+    if project.status not in ("recruiting", "applications_closed"):
         abort(
             409,
-            description="Escrow can only be funded when project is in 'recruiting' status.",
+            description="Escrow can only be funded when project is in 'recruiting' or 'applications_closed' status.",
         )
     if amount_cents <= 0:
         abort(400, description="Escrow amount must be positive.")
@@ -257,35 +262,42 @@ def lock_team(project: CollabProject, actor) -> CollabProject:
     """Validate escrow funded + payout % sums to 100, then transition to team_locked.
     Does NOT commit — callers commit.
     """
-    if project.status != "recruiting":
+    if project.status not in ("recruiting", "applications_closed"):
         abort(
             409,
-            description="Project must be in 'recruiting' status to lock team.",
-        )
-
-    ledger = CollabEscrowLedger.query.filter_by(project_id=project.id).first()
-    if ledger is None or ledger.status != "funded":
-        abort(
-            409,
-            description=(
-                "Escrow must be funded before locking the team. "
-                "Call /fund-escrow first."
-            ),
+            description="Project must be in 'recruiting' or 'applications_closed' status to lock team.",
         )
 
     members = CollabTeamMember.query.filter_by(
         project_id=project.id, status="active"
     ).all()
     if not members:
-        abort(409, description="No active team members — cannot lock an empty team.")
+        abort(409, description="No active team members — accept at least one applicant first.")
 
+    # Auto-close recruiting if still open
+    if project.status == "recruiting":
+        transition_project_status(project, "applications_closed", actor, is_system=True)
+
+    # Auto-fund escrow from project budget if not already funded
+    if project.budget_total > 0:
+        ledger = CollabEscrowLedger.query.filter_by(project_id=project.id).first()
+        if ledger is None or ledger.status != "funded":
+            fund_escrow(project, project.budget_total, actor)
+
+    # Auto-distribute equal payouts if all members still have 0%
     total_pct = sum(float(m.payout_percentage) for m in members)
-    if abs(total_pct - 100.0) > 0.01:
+    if abs(total_pct) < 0.01:
+        n = len(members)
+        base_pct = round(100.0 / n, 2)
+        for i, m in enumerate(members):
+            # Give remainder to last member so total is exactly 100
+            m.payout_percentage = round(100.0 - base_pct * (n - 1), 2) if i == n - 1 else base_pct
+    elif abs(total_pct - 100.0) > 0.01:
         abort(
             409,
             description=(
-                f"Payout percentages must sum to exactly 100 across all active "
-                f"team members (current sum: {total_pct:.2f})."
+                f"Payout percentages must sum to 100 "
+                f"(current: {total_pct:.2f}). Adjust member payouts before locking."
             ),
         )
 

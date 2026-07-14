@@ -25,7 +25,6 @@
 
   /**
    * Show a brief toast at the bottom of the screen.
-   * Uses the same CSS variables as the CyberCast theme so it blends in.
    * Auto-dismisses after 4 s.
    */
   function showToast(message, type) {
@@ -38,8 +37,7 @@
       '"></i></span>' +
       '<span class="cc-toast-msg">' + message + "</span>";
 
-    var style = toast.style;
-    style.cssText = [
+    toast.style.cssText = [
       "position:fixed",
       "bottom:24px",
       "left:50%",
@@ -61,7 +59,6 @@
 
     document.body.appendChild(toast);
 
-    // Animate in
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         toast.style.opacity = "1";
@@ -69,7 +66,6 @@
       });
     });
 
-    // Animate out after 4 s
     setTimeout(function () {
       toast.style.opacity = "0";
       toast.style.transform = "translateX(-50%) translateY(80px)";
@@ -80,15 +76,12 @@
   }
 
   /**
-   * Detect if the user just came from the login page and show a welcome toast.
-   * Uses sessionStorage so the toast only fires once per login — not on
-   * every page visit while logged in.
+   * Show "Welcome back!" toast once per login.
+   * cc_login_pending is set by the submit handler in login.html.
    */
   function maybeShowLoginToast() {
     if (!isLoggedIn()) return;
 
-    // cc_login_pending is set by the login form's submit handler (login.html)
-    // document.referrer is a fallback for browsers that preserve it
     var fromLogin =
       sessionStorage.getItem("cc_login_pending") === "1" ||
       document.referrer.indexOf("/login") !== -1;
@@ -144,7 +137,7 @@
     );
   }
 
-  /* ── Feature cards (same for both states) ── */
+  /* ── Feature cards ── */
 
   var FEATURES_HTML =
     '<div class="cc-features">' +
@@ -173,7 +166,7 @@
     "</div>" +
     "</div>";
 
-  /* ── Main build + inject ── */
+  /* ── Main inject ── */
 
   function buildLanding() {
     var wrapper = document.createElement("div");
@@ -186,7 +179,8 @@
 
   function inject() {
     if (!isHomepage()) return;
-    if (document.querySelector(".cc-landing")) return; // already injected
+    if (document.querySelector(".cc-landing")) return;
+    // Role-setup redirect is now handled server-side in __init__.py before_request hook.
 
     var main = document.querySelector("main[role='main']");
     if (!main) return;

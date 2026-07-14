@@ -24,6 +24,7 @@ from .models import (  # noqa: F401
     CollabNdaAcceptance,
     CollabProject,
     CollabTeamMember,
+    CollabUserProfile,
     CollabWallet,
     CollabWalletTransaction,
 )
@@ -43,3 +44,47 @@ def load(app):
         title="Bounty Collab",
         route="/plugins/bounty-collab/admin/bounty-collab",
     )
+
+    # ---------------------------------------------------------------------------
+    # Role-setup gate: redirect any authenticated user without a role profile
+    # to /setup-role before they can access any page.  Once a profile row exists
+    # in bntc_user_profiles the gate is permanently open for that user.
+    # ---------------------------------------------------------------------------
+    _SETUP_BYPASS = (
+        "/plugins/bounty-collab/setup-role",
+        "/login",
+        "/logout",
+        "/register",
+        "/oauth",
+        "/api/",
+        "/static/",
+        "/themes/",
+        "/plugins/ctfd_bounty_collab/static/",
+        "/plugins/bounty-collab/me/",
+    )
+
+    @app.before_request
+    def _enforce_role_setup():
+        from flask import redirect, request
+        from CTFd.utils import user as user_utils
+
+        if not user_utils.authed():
+            return
+
+        path = request.path
+
+        # Skip non-HTML requests (static, API, our own plugin endpoints)
+        for prefix in _SETUP_BYPASS:
+            if path.startswith(prefix):
+                return
+
+        # Admins never need role setup
+        from CTFd.utils.user import get_current_user
+        user = get_current_user()
+        if user is None or getattr(user, "type", None) == "admin":
+            return
+
+        # If no profile row exists → force role selection
+        from .models import CollabUserProfile
+        if CollabUserProfile.query.filter_by(user_id=user.id).first() is None:
+            return redirect("/plugins/bounty-collab/setup-role")
