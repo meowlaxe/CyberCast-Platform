@@ -1,0 +1,74 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/wallet.html
+   Plugin: ctfd_bounty_collab
+   Created: 2026-07-15  Author: Claude / CyberCast implementation
+   Purpose: Researcher's wallet view — current balance and transaction history.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>My Wallet</h2>
+
+  {% if wallet %}
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Available Balance</h5>
+          <p class="card-text display-4">{{ wallet.internal_balance }}</p>
+          <small>cents</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-secondary">
+        <div class="card-body">
+          <h5 class="card-title">Pending</h5>
+          <p class="card-text display-4">{{ wallet.pending_balance }}</p>
+          <small>cents</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>Transaction History</h4>
+  {% if transactions %}
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Date</th><th>Type</th><th>Amount</th><th>Balance After</th><th>Project</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td>{{ t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else '—' }}</td>
+        <td>
+          {% if t.type == 'payout_released' %}
+          <span class="badge badge-success">{{ t.type }}</span>
+          {% elif t.type == 'refund' %}
+          <span class="badge badge-warning">{{ t.type }}</span>
+          {% else %}
+          <span class="badge badge-secondary">{{ t.type }}</span>
+          {% endif %}
+        </td>
+        <td>{{ t.amount }}</td>
+        <td>{{ t.balance_after }}</td>
+        <td>{{ t.project_id or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted">No transactions yet.</p>
+  {% endif %}
+
+  {% else %}
+  <div class="alert alert-info">
+    You don't have a wallet yet. It will be created automatically when your
+    first payout is released.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

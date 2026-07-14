@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{# Extends the active CTFd theme's base.html so navbar/footer/CSS stay
+   consistent with the rest of the site. If your theme's base template
+   doesn't define a `content` block, adjust the block name below to match
+   (check CTFd/themes/<your-theme>/templates/base.html). #}
+
+{% block content %}
+<div class="container pp-container" style="max-width: 960px; margin-top: 2rem; margin-bottom: 4rem;">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block pp_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>Submit Report &mdash; {{ program.title }}</h1>
+<form method="POST" action="{{ url_for('bounty.bounty_submit', program_id=program.id) }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Finding Title</label>
+    <input type="text" name="title" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label>Severity</label>
+    <select name="severity" class="form-control">
+      <option value="low">Low</option>
+      <option value="medium" selected>Medium</option>
+      <option value="high">High</option>
+      <option value="critical">Critical</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Description &amp; Reproduction Steps</label>
+    <textarea name="description" class="form-control" rows="8" required
+      placeholder="Describe the vulnerability, impact, and step-by-step reproduction."></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Report</button>
+</form>
+{% endblock %}

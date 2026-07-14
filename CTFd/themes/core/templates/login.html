@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="cc-auth-page">
+    <div class="cc-auth-card">
+      <div class="cc-auth-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+
+      <div class="cc-auth-heading">
+        <h1>{% trans %}Login to{% endtrans %} {{ Configs.ctf_name }}</h1>
+        <p>{% trans %}Enter your credentials to access your account{% endtrans %}</p>
+      </div>
+
+      <div class="cc-auth-body">
+        {% include "components/errors.html" %}
+
+        {% with form = Forms.auth.LoginForm() %}
+          <form method="post" accept-charset="utf-8" class="cc-auth-form">
+            <div class="cc-form-field">
+              {{ form.name.label(class="form-label") }}
+              {{ form.name(class="form-control", value=name, autocomplete="username email") }}
+            </div>
+
+            <div class="cc-form-field">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(class="form-control", value=password, autocomplete="current-password") }}
+            </div>
+
+            <div class="cc-auth-options">
+              <label class="cc-auth-remember">
+                <input type="checkbox" name="remember" value="1">
+                <span>{% trans %}Remember me{% endtrans %}</span>
+              </label>
+
+              <a href="{{ url_for('auth.reset_password') }}">
+                {% trans %}Forgot password?{% endtrans %}
+              </a>
+            </div>
+
+            {{ form.submit(class="btn btn-block btn-primary w-100 cc-auth-submit", id="cc-login-submit") }}
+            {{ form.nonce() }}
+          </form>
+
+          {# 2026-07-15: Set sessionStorage flag so landing.js can show the
+             "Welcome back!" toast after the post-login redirect. #}
+          <script>
+          (function () {
+            var btn = document.getElementById("cc-login-submit");
+            if (btn) {
+              btn.closest("form").addEventListener("submit", function () {
+                sessionStorage.setItem("cc_login_pending", "1");
+              });
+            }
+          })();
+          </script>
+        {% endwith %}
+
+        {% if integrations.mlc() %}
+          <div class="cc-auth-divider"><span>{% trans %}Or continue with{% endtrans %}</span></div>
+
+          <a class="btn btn-secondary btn-lg btn-block w-100 cc-auth-oauth" href="{{ url_for('auth.oauth_login') }}">
+            Login with Major League Cyber
+          </a>
+        {% endif %}
+
+        {% if registration_visible() %}
+          <p class="cc-auth-switch">
+            {% trans %}Don't have an account?{% endtrans %}
+            <a href="{{ url_for('auth.register') }}">{% trans %}Sign up{% endtrans %}</a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

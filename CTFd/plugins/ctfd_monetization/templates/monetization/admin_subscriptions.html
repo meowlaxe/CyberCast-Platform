@@ -1,0 +1,22 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Subscription Management</h1>
+<div class="table-responsive">
+  <table class="table">
+    <thead><tr><th>User</th><th>Plan</th><th>Status</th><th>Period End</th><th>Provider</th></tr></thead>
+    <tbody>
+      {% for sub in subscriptions %}
+      <tr>
+        <td>User #{{ sub.user_id }}</td>
+        <td>{{ sub.plan }}</td>
+        <td>{{ sub.status }}</td>
+        <td>{{ sub.current_period_end or "-" }}</td>
+        <td>{{ sub.provider }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">No subscriptions yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

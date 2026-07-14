@@ -1,0 +1,28 @@
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Purpose</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.invoice_number }}</td>
+        <td>{{ invoice.purpose }}</td>
+        <td>{{ invoice.currency }} {{ "{:,}".format(invoice.amount) }}</td>
+        <td><span class="badge badge-info">{{ invoice.status }}</span></td>
+        <td>{{ invoice.created_at }}</td>
+        <td><a href="{{ url_for('monetization.invoice_detail', invoice_id=invoice.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6">No invoices yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

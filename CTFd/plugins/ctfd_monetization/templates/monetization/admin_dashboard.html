@@ -1,0 +1,25 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
+  <div>
+    <h1>Payment Dashboard</h1>
+    <p class="text-muted">Manual provider now, Xendit-ready abstraction later.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('monetization.admin_subscriptions') }}" class="btn btn-outline-primary btn-sm">Subscriptions</a>
+    <a href="{{ url_for('monetization.admin_invoices') }}" class="btn btn-outline-primary btn-sm">Invoices</a>
+    <a href="{{ url_for('monetization.admin_payments') }}" class="btn btn-outline-primary btn-sm">Payments</a>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><small>Total Invoices</small><h3>{{ total_invoices }}</h3></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><small>Paid</small><h3>{{ paid_invoices }}</h3></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><small>Pending</small><h3>{{ pending_invoices }}</h3></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><small>Premium Users</small><h3>{{ premium_users }}</h3></div></div></div>
+</div>
+
+<h3>Recent Invoices</h3>
+{% set invoices = recent_invoices %}
+{% include "monetization/_invoice_table.html" %}
+{% endblock %}

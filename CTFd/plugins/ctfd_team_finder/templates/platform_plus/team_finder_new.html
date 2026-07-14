@@ -1,0 +1,28 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>Create a Team-Finder Post</h1>
+<form method="POST" action="{{ url_for('team_finder.team_finder_new') }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Title</label>
+    <input type="text" name="title" class="form-control" placeholder="Looking for 1 pwn player for a regional CTF" required>
+  </div>
+  <div class="form-group">
+    <label>Looking for (category/role)</label>
+    <input type="text" name="looking_for" class="form-control" placeholder="pwn, reverse engineering">
+  </div>
+  <div class="form-group">
+    <label>Your skills</label>
+    <input type="text" name="skills" class="form-control" placeholder="web, crypto">
+  </div>
+  <div class="form-group">
+    <label>Message</label>
+    <textarea name="message" class="form-control" rows="4"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Contact (Discord/email)</label>
+    <input type="text" name="contact" class="form-control" placeholder="username#0000 or email">
+  </div>
+  <button type="submit" class="btn btn-primary">Post</button>
+</form>
+{% endblock %}

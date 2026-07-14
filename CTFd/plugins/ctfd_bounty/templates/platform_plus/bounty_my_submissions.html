@@ -1,0 +1,23 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>My Reports</h1>
+<table class="table">
+  <thead>
+    <tr><th>Title</th><th>Program</th><th>Severity</th><th>Status</th><th>Reward</th><th>Submitted</th></tr>
+  </thead>
+  <tbody>
+    {% for s in submissions %}
+    <tr>
+      <td>{{ s.title }}</td>
+      <td>{{ s.program.title }}</td>
+      <td><span class="badge badge-warning">{{ s.severity }}</span></td>
+      <td><span class="badge badge-info">{{ s.status }}</span></td>
+      <td>{% if s.reward_amount %}{{ s.program.currency }} {{ s.reward_amount }}{% else %}-{% endif %}</td>
+      <td>{{ s.submitted_at.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">You haven't submitted any reports yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

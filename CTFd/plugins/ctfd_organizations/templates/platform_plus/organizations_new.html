@@ -1,0 +1,32 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<h1>Request Organization</h1>
+<p class="text-muted">
+  Request a new Organization identity if your university, company, or community
+  is not available yet.
+</p>
+<form method="POST" action="{{ url_for('organizations.organizations_new') }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+  <div class="form-group">
+    <label>Organization Name</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="form-group">
+    <label>Type</label>
+    <select name="org_type" class="form-control">
+      <option value="university">University</option>
+      <option value="company">Company</option>
+      <option value="community">Community</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Website</label>
+    <input type="url" name="website" class="form-control" placeholder="https://...">
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" class="form-control" rows="4"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Request</button>
+</form>
+{% endblock %}

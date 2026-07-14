@@ -1,0 +1,119 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/project_new.html
+   Plugin: ctfd_bounty_collab
+   Created: 2026-07-15  Author: Claude / CyberCast implementation
+   Purpose: Form for Enterprise users to post a new draft bounty project.
+            Submits JSON to POST /plugins/bounty-collab/projects.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 700px;">
+  <h2>Post a Bounty Project</h2>
+
+  <form id="bntc-new-project">
+    <div class="form-group">
+      <label>Title *</label>
+      <input class="form-control" name="title" required>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <input class="form-control" name="category" placeholder="e.g. Vulnerability Research">
+    </div>
+    <div class="form-group">
+      <label>Problem Statement *</label>
+      <textarea class="form-control" name="problem_statement" rows="4" required></textarea>
+    </div>
+    <div class="form-group">
+      <label>Scope of Work</label>
+      <textarea class="form-control" name="scope_of_work" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Deliverables (one per line)</label>
+      <textarea class="form-control" name="deliverables" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Required Expertise (comma-separated)</label>
+      <input class="form-control" name="required_expertise" placeholder="e.g. binary exploitation, web security">
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Budget (cents) *</label>
+        <input class="form-control" name="budget_total" type="number" min="1" required>
+      </div>
+      <div class="form-group col-md-4">
+        <label>Team Size Min</label>
+        <input class="form-control" name="team_size_min" type="number" min="1" value="1">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Team Size Max</label>
+        <input class="form-control" name="team_size_max" type="number" min="1" value="5">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label>Application Deadline</label>
+        <input class="form-control" name="application_deadline" type="datetime-local">
+      </div>
+      <div class="form-group col-md-6">
+        <label>Research Duration (days)</label>
+        <input class="form-control" name="research_duration_days" type="number" min="1">
+      </div>
+    </div>
+    <div class="form-group form-check">
+      <input class="form-check-input" type="checkbox" id="ndaCheck" name="is_nda_required">
+      <label class="form-check-label" for="ndaCheck">NDA Required</label>
+    </div>
+    <div class="form-group" id="ndaBriefGroup" style="display:none;">
+      <label>NDA Full Brief (shown only after NDA acceptance)</label>
+      <textarea class="form-control" name="nda_full_brief" rows="4"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Draft</button>
+    <a href="{{ url_for('bounty_collab.project_list_view') }}" class="btn btn-secondary ml-2">Cancel</a>
+  </form>
+</div>
+
+<script>
+(function () {
+  var ndaCheck = document.getElementById("ndaCheck");
+  var ndaGroup = document.getElementById("ndaBriefGroup");
+  ndaCheck.addEventListener("change", function () {
+    ndaGroup.style.display = ndaCheck.checked ? "block" : "none";
+  });
+
+  document.getElementById("bntc-new-project").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var fd = new FormData(e.target);
+    var data = {};
+    fd.forEach(function (v, k) { data[k] = v; });
+    data.is_nda_required = ndaCheck.checked;
+    data.budget_total = parseInt(data.budget_total);
+    data.team_size_min = parseInt(data.team_size_min) || 1;
+    data.team_size_max = parseInt(data.team_size_max) || 5;
+    if (data.research_duration_days) data.research_duration_days = parseInt(data.research_duration_days);
+    if (data.application_deadline) {
+      // Convert local datetime-local to ISO with seconds
+      data.application_deadline = new Date(data.application_deadline).toISOString();
+    }
+
+    fetch("/plugins/bounty-collab/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": (window.init && init.csrfNonce) || ""
+      },
+      body: JSON.stringify(data)
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.id) {
+          window.location = "/plugins/bounty-collab/projects/" + d.id + "/view";
+        } else {
+          alert(JSON.stringify(d));
+        }
+      });
+  });
+})();
+</script>
+{% endblock %}

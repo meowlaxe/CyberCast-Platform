@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+  <title>{{ title or Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
+
+  {{ meta | safe }}
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+
+  {{ Plugins.styles }}
+
+  <script type="text/javascript">
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+          'eventSounds': [
+            "/themes/core/static/sounds/notification.webm",
+            "/themes/core/static/sounds/notification.mp3",
+          ],
+      }
+  </script>
+
+  {{ Configs.theme_header }}
+</head>
+<body>
+{% include "components/navbar.html" %}
+
+<main role="main">
+  {% block content %}
+  {% endblock %}
+</main>
+
+{% include "components/snackbar.html" %}
+
+<footer class="footer cc-site-footer">
+  <div class="container">
+    <div class="cc-footer-inner">
+      <div class="cc-footer-brand">
+        <small>&copy; 2026 {{ Configs.ctf_name }}</small>
+        <span>Empowering hackers worldwide</span>
+      </div>
+
+      <nav class="cc-footer-links" aria-label="{% trans %}Footer navigation{% endtrans %}">
+        <a href="/about">{% trans %}About{% endtrans %}</a>
+        <a href="/terms">{% trans %}Terms{% endtrans %}</a>
+        <a href="/privacy">{% trans %}Privacy{% endtrans %}</a>
+        <a href="/contact">{% trans %}Contact{% endtrans %}</a>
+      </nav>
+
+      <div class="cc-footer-social">
+        <span>Connect:</span>
+        <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="mailto:admin@example.com" aria-label="Email"><i class="far fa-envelope"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% include "components/notifications.html" %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/page.js") }}
+{% endblock %}
+
+{{ Plugins.scripts }}
+
+{{ Configs.theme_footer }}
+</body>
+</html>

@@ -1,0 +1,100 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/team_workspace.html
+   Plugin: ctfd_bounty_collab
+   Created: 2026-07-15  Author: Claude / CyberCast implementation
+   Purpose: Team workspace — active members submit deliverables; owner
+            sees team progress and controls review/revision flow.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ project.title }}</h2>
+  <p>
+    Status: <strong>{{ project.status }}</strong>
+    {% if project.status == 'submitted_for_review' %}
+    <span class="badge badge-warning ml-2">Awaiting Review</span>
+    {% elif project.status == 'revision_requested' %}
+    <span class="badge badge-danger ml-2">Revision Requested</span>
+    {% elif project.status == 'in_progress' %}
+    <span class="badge badge-success ml-2">In Progress</span>
+    {% endif %}
+  </p>
+
+  {% if member %}
+  <div class="alert alert-info">
+    Your payout share: <strong>{{ member.payout_percentage }}%</strong>
+    {% if member.is_team_lead %}<span class="badge badge-primary ml-1">Team Lead</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {# Submit deliverable form (team members only, in_progress/revision_requested) #}
+  {% if member and project.status in ['in_progress', 'revision_requested'] %}
+  <div class="card mb-4">
+    <div class="card-header">Submit Deliverable</div>
+    <div class="card-body">
+      <form id="bntc-submit-deliverable">
+        <div class="form-group">
+          <label>Content / Description *</label>
+          <textarea class="form-control" id="deliverableContent" rows="5"></textarea>
+        </div>
+        <div class="form-group">
+          <label>File Reference (URL or path, optional)</label>
+          <input class="form-control" id="deliverableFile">
+        </div>
+        <button type="submit" class="btn btn-success">Submit</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <h4>Deliverables ({{ deliverables | length }})</h4>
+  {% if deliverables %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Version</th><th>Submitted By</th><th>Status</th><th>Reviewer Note</th><th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in deliverables %}
+      <tr>
+        <td>v{{ d.version_number }}</td>
+        <td>{{ d.submitted_by }}</td>
+        <td><span class="badge badge-secondary">{{ d.status }}</span></td>
+        <td>{{ d.reviewer_note or '—' }}</td>
+        <td>{{ d.created_at.strftime('%Y-%m-%d %H:%M') if d.created_at else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted">No deliverables submitted yet.</p>
+  {% endif %}
+</div>
+
+{% if member and project.status in ['in_progress', 'revision_requested'] %}
+<script>
+(function () {
+  document.getElementById("bntc-submit-deliverable").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var content = document.getElementById("deliverableContent").value;
+    var fileRef = document.getElementById("deliverableFile").value;
+    fetch("/plugins/bounty-collab/projects/{{ project.id }}/deliverables", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": (window.init && init.csrfNonce) || ""
+      },
+      body: JSON.stringify({ content: content, file_ref: fileRef })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.id) { location.reload(); }
+        else { alert(JSON.stringify(d)); }
+      });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

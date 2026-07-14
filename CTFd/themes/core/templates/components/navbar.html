@@ -1,0 +1,142 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top cc-site-navbar">
+  <div class="container">
+    <a href="{{ url_for('views.static_html', route='/') }}" class="navbar-brand cc-navbar-brand">
+      {% if Configs.ctf_logo %}
+        <img
+            class="img-responsive ctf_logo"
+            src="{{ url_for('views.files', path=Configs.ctf_logo) }}"
+            alt="{{ Configs.ctf_name }}"
+            height="25"
+        >
+      {% endif %}
+      <span class="cc-navbar-brand-text">{{ Configs.ctf_name }}</span>
+    </a>
+
+    <button
+        class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#base-navbars"
+        aria-controls="base-navbars" aria-expanded="false" aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="base-navbars">
+      <ul class="navbar-nav cc-navbar-main">
+        {% if authed() %}
+          <li class="nav-item dropdown">
+            <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% trans %}Dashboard{% endtrans %}
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="/">
+                  {% trans %}Homepage{% endtrans %}
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('users.private') }}">
+                  {% trans %}My Profile{% endtrans %}
+                </a>
+              </li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('views.static_html', route='/') }}">{% trans %}Home{% endtrans %}</a>
+          </li>
+        {% endif %}
+
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('learning_paths.learning_paths_list') }}">{% trans %}Learn{% endtrans %}</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('challenges.listing') }}">{% trans %}Challenges{% endtrans %}</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('bounty.bounty_list') }}">{% trans %}Bounty{% endtrans %}</a>
+        </li>
+
+        {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('scoreboard.listing') }}">{% trans %}Leaderboard{% endtrans %}</a>
+          </li>
+        {% endif %}
+
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% trans %}Community{% endtrans %}
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="{{ url_for('student_teams.team_list') }}">
+                {% trans %}Student Teams{% endtrans %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('team_finder.team_finder_list') }}">
+                {% trans %}Team Finder{% endtrans %}
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{ url_for('organizations.organizations_list') }}">
+                {% trans %}Organizations{% endtrans %}
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% if not authed() %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('monetization.pricing') }}">{% trans %}Pricing{% endtrans %}</a>
+          </li>
+        {% endif %}
+      </ul>
+
+      <hr class="d-lg-none">
+
+      <ul class="navbar-nav cc-navbar-actions">
+        {% if authed() %}
+          <li class="nav-item">
+            <a class="nav-link cc-nav-icon-link" href="{{ url_for('views.notifications') }}" aria-label="{% trans %}Notifications{% endtrans %}">
+              <i class="fas fa-bell"></i>
+              <span x-data x-show="$store.unread_count > 0" x-text="$store.unread_count" class="badge rounded-pill bg-danger badge-notification"></span>
+              <span class="d-lg-none">{% trans %}Notifications{% endtrans %}</span>
+            </a>
+          </li>
+
+          <li class="nav-item dropdown">
+            <button class="nav-link dropdown-toggle cc-profile-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span class="cc-profile-avatar">{{ (User.name or "U")[:1] | upper }}</span>
+              <span class="cc-profile-name d-lg-none">{{ User.name }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end cc-profile-menu">
+              <li><a class="dropdown-item" href="{{ url_for('users.private') }}">{% trans %}My Profile{% endtrans %}</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('learning_paths.progress_dashboard') }}">{% trans %}My Progress{% endtrans %}</a></li>
+              <li><span class="dropdown-item disabled">{% trans %}Certificates{% endtrans %}</span></li>
+              <li><a class="dropdown-item" href="{{ url_for('monetization.subscription') }}">{% trans %}Subscription{% endtrans %}</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('monetization.billing_history') }}">{% trans %}Billing History{% endtrans %}</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('views.settings') }}">{% trans %}Settings{% endtrans %}</a></li>
+              {% if is_admin() %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('admin.view') }}">{% trans %}Admin Panel{% endtrans %}</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">{% trans %}Logout{% endtrans %}</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link cc-login-link" href="{{ url_for('auth.login') }}">{% trans %}Login{% endtrans %}</a>
+          </li>
+
+          {% if registration_visible() %}
+            <li class="nav-item">
+              <a class="nav-link cc-register-link" href="{{ url_for('auth.register') }}">{% trans %}Register{% endtrans %}</a>
+            </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

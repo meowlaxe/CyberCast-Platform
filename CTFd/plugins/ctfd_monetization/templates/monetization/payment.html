@@ -1,0 +1,13 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Payment</h1>
+<div class="card">
+  <div class="card-body">
+    <h4>{{ invoice.invoice_number }}</h4>
+    <p class="text-muted">Payment provider integration is prepared but not connected to Xendit yet.</p>
+    <p><strong>Amount:</strong> {{ invoice.currency }} {{ "{:,}".format(invoice.amount) }}</p>
+    <p><strong>Status:</strong> {{ invoice.status }}</p>
+    <a href="{{ url_for('monetization.payment_status', invoice_id=invoice.id) }}" class="btn btn-outline-primary">Check Payment Status</a>
+  </div>
+</div>
+{% endblock %}

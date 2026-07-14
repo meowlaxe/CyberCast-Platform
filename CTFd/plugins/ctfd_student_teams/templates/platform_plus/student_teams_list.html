@@ -1,0 +1,132 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+<section class="mb-5">
+  <div class="card">
+    <div class="card-body p-4 p-md-5">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <span class="badge badge-info mb-3">Community</span>
+          <h1>Explore Student Teams</h1>
+          <p class="text-muted mb-0">
+            Find permanent CyberCast learning communities, collaborate with peers,
+            and grow together while your challenges, flags, and progress stay individual.
+          </p>
+        </div>
+        <div class="col-lg-4 mt-4 mt-lg-0 text-lg-right">
+          {% if authed() %}
+            <a class="btn btn-primary" href="{{ url_for('student_teams.team_new') }}">
+              Create Team
+            </a>
+          {% else %}
+            <a class="btn btn-primary" href="{{ url_for('auth.login') }}">
+              Login to Create Team
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mb-5">
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+    <div>
+      <h2 class="h4 mb-1">Featured Teams</h2>
+      <p class="text-muted mb-0">A quick look at active learning communities.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for team in teams[:3] %}
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          {% if team.banner %}
+            <img class="card-img-top" src="{{ team.banner }}" alt="{{ team.name }} banner">
+          {% endif %}
+          <div class="card-body">
+            <span class="badge badge-info mb-2">{{ team.visibility }}</span>
+            <h3 class="h5">{{ team.name }}</h3>
+            <p class="text-muted">
+              {{ team.description or "A CyberCast student learning community." }}
+            </p>
+            <a
+                class="btn btn-outline-primary btn-sm"
+                href="{{ url_for('student_teams.team_detail', slug=team.slug) }}"
+            >
+              View Team
+            </a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center">
+            <p class="text-muted mb-0">Featured Student Teams will appear here.</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section>
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
+    <div>
+      <h2 class="h4 mb-1">Latest Teams</h2>
+      <p class="text-muted mb-0">Recently created Student Teams on CyberCast.</p>
+    </div>
+    {% if authed() %}
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('student_teams.team_new') }}">
+        Create Team
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="row">
+    {% for team in teams %}
+      <div class="col-md-6 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h3 class="h5 mb-1">{{ team.name }}</h3>
+                <p class="text-muted mb-3">
+                  {{ team.description or "No description yet." }}
+                </p>
+              </div>
+              <span class="badge badge-info">{{ team.visibility }}</span>
+            </div>
+            <a
+                class="btn btn-outline-primary btn-sm"
+                href="{{ url_for('student_teams.team_detail', slug=team.slug) }}"
+            >
+              View Team
+            </a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center p-5">
+            <h3 class="h5">No Student Teams yet</h3>
+            <p class="text-muted">
+              Create the first permanent learning community on CyberCast.
+            </p>
+            {% if authed() %}
+              <a class="btn btn-primary" href="{{ url_for('student_teams.team_new') }}">
+                Create Team
+              </a>
+            {% else %}
+              <a class="btn btn-primary" href="{{ url_for('auth.login') }}">
+                Login to Create Team
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

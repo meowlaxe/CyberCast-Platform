@@ -1,0 +1,50 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/project_list.html
+   Plugin: ctfd_bounty_collab
+   Created: 2026-07-15  Author: Claude / CyberCast implementation
+   Purpose: Public listing of open bounty projects for expert browsing.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Open Bounty Projects</h2>
+    <a href="{{ url_for('bounty_collab.project_new_view') }}" class="btn btn-primary">
+      + Post Project
+    </a>
+  </div>
+
+  {% if projects %}
+  <div class="row">
+    {% for p in projects %}
+    <div class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">
+            <a href="{{ url_for('bounty_collab.project_detail_view', project_id=p.id) }}">
+              {{ p.title }}
+            </a>
+          </h5>
+          <p class="card-text text-muted mb-1">{{ p.category or "Uncategorized" }}</p>
+          <p class="card-text">{{ p.problem_statement | truncate(120) }}</p>
+          <span class="badge badge-info">{{ p.status }}</span>
+          {% if p.is_nda_required %}
+          <span class="badge badge-warning">NDA Required</span>
+          {% endif %}
+        </div>
+        <div class="card-footer text-muted small">
+          Budget: {{ p.budget_total | int }} cents
+          {% if p.application_deadline %}
+          &nbsp;·&nbsp; Deadline: {{ p.application_deadline.strftime('%Y-%m-%d') }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">No open projects at the moment. Check back soon.</p>
+  {% endif %}
+</div>
+{% endblock %}

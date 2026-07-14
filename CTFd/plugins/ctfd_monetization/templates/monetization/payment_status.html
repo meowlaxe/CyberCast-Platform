@@ -1,0 +1,15 @@
+{% extends "monetization/_base.html" %}
+{% block monetization_content %}
+<h1>Payment Status</h1>
+<div class="card">
+  <div class="card-body">
+    <p><strong>Invoice:</strong> {{ invoice.invoice_number }}</p>
+    <p><strong>Status:</strong> <span class="badge badge-info">{{ invoice.status }}</span></p>
+    {% if invoice.status != "paid" %}
+      <p class="text-muted">Waiting for payment confirmation.</p>
+    {% else %}
+      <p class="text-success">Payment received.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

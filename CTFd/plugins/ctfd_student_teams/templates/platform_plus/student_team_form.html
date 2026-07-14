@@ -1,0 +1,115 @@
+{% extends "platform_plus/_base.html" %}
+{% block pp_content %}
+{% set editing = team is not none %}
+<div class="d-flex justify-content-between align-items-start flex-wrap mb-4">
+  <div>
+    <h1>{{ "Edit Student Team" if editing else "Create Student Team" }}</h1>
+    <p class="text-muted mb-0">
+      Student Teams are permanent learning communities, not CTFd built-in teams.
+    </p>
+  </div>
+  <a class="btn btn-outline-primary" href="{{ url_for('student_teams.team_list') }}">
+    Back to Teams
+  </a>
+</div>
+
+{% if editing %}
+  {% set form_action = url_for('student_teams.team_edit', slug=team.slug) %}
+{% else %}
+  {% set form_action = url_for('student_teams.team_new') %}
+{% endif %}
+
+<form method="POST" action="{{ form_action }}">
+  <input type="hidden" name="nonce" value="{{ session.nonce }}">
+
+  <div class="card">
+    <div class="card-body">
+      <div class="form-group mb-3">
+        <label for="name">Team Name</label>
+        <input
+            id="name"
+            class="form-control"
+            name="name"
+            maxlength="128"
+            required
+            value="{{ team.name if editing else '' }}"
+            placeholder="Cyber Warriors"
+        >
+      </div>
+
+      <div class="form-group mb-3">
+        <label for="description">Description</label>
+        <textarea
+            id="description"
+            class="form-control"
+            name="description"
+            rows="5"
+            placeholder="We learn cybersecurity together across many domains."
+        >{{ team.description if editing and team.description else '' }}</textarea>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label for="avatar">Avatar URL</label>
+            <input
+                id="avatar"
+                class="form-control"
+                name="avatar"
+                maxlength="256"
+                value="{{ team.avatar if editing and team.avatar else '' }}"
+                placeholder="https://example.com/avatar.png"
+            >
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label for="banner">Banner URL</label>
+            <input
+                id="banner"
+                class="form-control"
+                name="banner"
+                maxlength="256"
+                value="{{ team.banner if editing and team.banner else '' }}"
+                placeholder="https://example.com/banner.png"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-3">
+            <label for="visibility">Visibility</label>
+            <select id="visibility" class="form-control" name="visibility">
+              {% set visibility = team.visibility if editing else "public" %}
+              <option value="public" {{ "selected" if visibility == "public" }}>Public</option>
+              <option value="unlisted" {{ "selected" if visibility == "unlisted" }}>
+                Unlisted
+              </option>
+              <option value="private" {{ "selected" if visibility == "private" }}>Private</option>
+            </select>
+          </div>
+        </div>
+        {% if editing %}
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="status">Status</label>
+              <select id="status" class="form-control" name="status">
+                <option value="active" {{ "selected" if team.status == "active" }}>Active</option>
+                <option value="archived" {{ "selected" if team.status == "archived" }}>
+                  Archived
+                </option>
+              </select>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        {{ "Save Changes" if editing else "Create Student Team" }}
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}
