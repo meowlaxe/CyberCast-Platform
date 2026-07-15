@@ -53,9 +53,7 @@
           <a class="nav-link" href="{{ url_for('challenges.listing') }}">{% trans %}Challenges{% endtrans %}</a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('bounty.bounty_list') }}">{% trans %}Bounty{% endtrans %}</a>
-        </li>
+
 
         {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
           <li class="nav-item">
@@ -113,6 +111,7 @@
             <ul class="dropdown-menu dropdown-menu-end cc-profile-menu">
               <li><a class="dropdown-item" href="{{ url_for('users.private') }}">{% trans %}My Profile{% endtrans %}</a></li>
               <li><a class="dropdown-item" href="{{ url_for('learning_paths.progress_dashboard') }}">{% trans %}My Progress{% endtrans %}</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('bounty_collab.my_applications_view') }}">{% trans %}My Applications{% endtrans %}</a></li>
               <li><span class="dropdown-item disabled">{% trans %}Certificates{% endtrans %}</span></li>
               <li><a class="dropdown-item" href="{{ url_for('monetization.subscription') }}">{% trans %}Subscription{% endtrans %}</a></li>
               <li><a class="dropdown-item" href="{{ url_for('monetization.billing_history') }}">{% trans %}Billing History{% endtrans %}</a></li>

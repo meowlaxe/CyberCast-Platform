@@ -1,0 +1,199 @@
+{# =============================================================================
+   File: templates/bounty_collab/project_new.html
+   Modified: 2026-07-15 — Budget input in USD dollars (converted to cents in JS)
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:700px;">
+
+  <a href="{{ url_for('bounty_collab.project_list_view') }}" class="text-muted small mb-3 d-inline-block">
+    ← Back to Projects
+  </a>
+
+  <h2 class="text-white mb-1">Post a Research Project</h2>
+  <p class="text-muted mb-4">Describe your research challenge and set a reward pool for experts to apply.</p>
+
+  <form id="bntc-new-project">
+
+    <div class="card border-0 mb-3" style="background:#1a1f2e;">
+      <div class="card-body">
+        <h6 class="text-muted mb-3 text-uppercase small">Basic Information</h6>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Project Title <span class="text-danger">*</span></label>
+          <input class="form-control" name="title" required
+                 placeholder="e.g. Web Application Penetration Testing"
+                 style="background:#0d1117; border-color:#333; color:#fff;">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Category</label>
+          <select class="form-select" name="category" style="background:#0d1117; border-color:#333; color:#fff;">
+            <option value="">Select a category</option>
+            <option>Web Security</option>
+            <option>Network Security</option>
+            <option>Blockchain Security</option>
+            <option>Mobile Security</option>
+            <option>Cryptography</option>
+            <option>Malware Analysis</option>
+            <option>Cloud Security</option>
+            <option>IoT Security</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Problem Statement <span class="text-danger">*</span></label>
+          <textarea class="form-control" name="problem_statement" rows="4" required
+                    placeholder="Describe the security challenge, what you need investigated, and why it matters..."
+                    style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 mb-3" style="background:#1a1f2e;">
+      <div class="card-body">
+        <h6 class="text-muted mb-3 text-uppercase small">Scope & Deliverables</h6>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Scope of Work</label>
+          <textarea class="form-control" name="scope_of_work" rows="3"
+                    placeholder="What systems/assets are in scope? What is out of scope?"
+                    style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Expected Deliverables</label>
+          <textarea class="form-control" name="deliverables" rows="3"
+                    placeholder="One deliverable per line&#10;e.g. Vulnerability report&#10;Proof-of-concept code&#10;Remediation guide"
+                    style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Required Expertise</label>
+          <input class="form-control" name="required_expertise"
+                 placeholder="Comma-separated: e.g. web security, OWASP, burp suite"
+                 style="background:#0d1117; border-color:#333; color:#fff;">
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 mb-3" style="background:#1a1f2e;">
+      <div class="card-body">
+        <h6 class="text-muted mb-3 text-uppercase small">Budget & Timeline</h6>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label text-white">Total Budget (USD) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:#0d1117; border-color:#333; color:#888;">$</span>
+              <input class="form-control" name="budget_usd" type="number" min="1" step="0.01" required
+                     placeholder="5000.00"
+                     style="background:#0d1117; border-color:#333; color:#fff;">
+            </div>
+            <div class="form-text text-muted">90% goes to researchers · 10% platform fee</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-white">Research Duration (days)</label>
+            <input class="form-control" name="research_duration_days" type="number" min="1"
+                   placeholder="e.g. 30"
+                   style="background:#0d1117; border-color:#333; color:#fff;">
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-4">
+            <label class="form-label text-white">Team Size Min</label>
+            <input class="form-control" name="team_size_min" type="number" min="1" value="1"
+                   style="background:#0d1117; border-color:#333; color:#fff;">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-white">Team Size Max</label>
+            <input class="form-control" name="team_size_max" type="number" min="1" value="5"
+                   style="background:#0d1117; border-color:#333; color:#fff;">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-white">Application Deadline</label>
+            <input class="form-control" name="application_deadline" type="date"
+                   style="background:#0d1117; border-color:#333; color:#fff;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 mb-4" style="background:#1a1f2e;">
+      <div class="card-body">
+        <h6 class="text-muted mb-3 text-uppercase small">Confidentiality</h6>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="ndaCheck" name="is_nda_required">
+          <label class="form-check-label text-white" for="ndaCheck">
+            Require NDA before showing full project brief
+          </label>
+        </div>
+        <div id="ndaBriefGroup" style="display:none;" class="mt-2">
+          <label class="form-label text-muted small">Full Brief (only shown after NDA acceptance)</label>
+          <textarea class="form-control" name="nda_full_brief" rows="4"
+                    placeholder="Detailed confidential information about the project..."
+                    style="background:#0d1117; border-color:#333; color:#fff;"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="fas fa-save me-2"></i>Create Draft
+      </button>
+      <a href="{{ url_for('bounty_collab.project_list_view') }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+    <p class="text-muted small mt-2">Saved as a draft — you can review before publishing.</p>
+
+  </form>
+</div>
+
+<script>
+document.getElementById("ndaCheck").addEventListener("change", function() {
+  document.getElementById("ndaBriefGroup").style.display = this.checked ? "block" : "none";
+});
+
+document.getElementById("bntc-new-project").addEventListener("submit", function(e) {
+  e.preventDefault();
+  var fd = new FormData(e.target);
+  var data = {};
+  fd.forEach(function(v, k) { data[k] = v; });
+
+  // Convert dollar input → cents for storage
+  if (data.budget_usd) data.budget_usd = parseFloat(data.budget_usd);
+  data.is_nda_required = document.getElementById("ndaCheck").checked;
+  data.team_size_min = parseInt(data.team_size_min) || 1;
+  data.team_size_max = parseInt(data.team_size_max) || 5;
+  if (data.research_duration_days) data.research_duration_days = parseInt(data.research_duration_days);
+  if (data.application_deadline) {
+    data.application_deadline = new Date(data.application_deadline).toISOString();
+  }
+
+  var btn = e.target.querySelector("button[type=submit]");
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+
+  fetch("/plugins/bounty-collab/projects", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "CSRF-Token": (window.init && window.init.csrfNonce) || ""
+    },
+    body: JSON.stringify(data)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.id) {
+      window.location = "/plugins/bounty-collab/projects/" + d.id + "/view";
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-2"></i>Create Draft';
+      alert(d.description || d.message || JSON.stringify(d));
+    }
+  });
+});
+</script>
+{% endblock %}

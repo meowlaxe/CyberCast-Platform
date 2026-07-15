@@ -1,4 +1,6 @@
 import argparse
+from dotenv import load_dotenv
+load_dotenv()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--port", help="Port for debug server to listen on", default=4000)

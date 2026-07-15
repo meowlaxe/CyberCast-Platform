@@ -1,0 +1,65 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/applications.html
+   Plugin: ctfd_bounty_collab
+   Created: 2026-07-15  Author: Claude / CyberCast implementation
+   Purpose: Enterprise owner's view of applications for a project.
+            Data loaded via GET /projects/<id>/applications (JSON API).
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Applications</h2>
+  <p class="text-muted">
+    Use the API to manage applications:<br>
+    <code>PATCH /plugins/bounty-collab/applications/&lt;id&gt;</code>
+    with body <code>{"status": "accepted"|"rejected"|"shortlisted"}</code>
+  </p>
+
+  <div id="bntc-applications-list">
+    <p class="text-muted">Loading...</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var projectId = {{ project_id | tojson }};
+  fetch("/plugins/bounty-collab/projects/" + projectId + "/applications", {
+    headers: { "CSRF-Token": (window.init && init.csrfNonce) || "" }
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (apps) {
+      var el = document.getElementById("bntc-applications-list");
+      if (!apps.length) { el.innerHTML = "<p>No applications yet.</p>"; return; }
+      var html = '<table class="table"><thead><tr>' +
+        '<th>ID</th><th>Applicant</th><th>Team</th><th>Status</th><th>Actions</th>' +
+        '</tr></thead><tbody>';
+      apps.forEach(function (a) {
+        html += '<tr>' +
+          '<td>' + a.id + '</td>' +
+          '<td>' + a.applicant_id + '</td>' +
+          '<td>' + (a.team_name || '—') + '</td>' +
+          '<td>' + a.status + '</td>' +
+          '<td>' +
+          '<button onclick="updateApp(' + a.id + ',\'accepted\')">Accept</button> ' +
+          '<button onclick="updateApp(' + a.id + ',\'shortlisted\')">Shortlist</button> ' +
+          '<button onclick="updateApp(' + a.id + ',\'rejected\')">Reject</button>' +
+          '</td></tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    });
+
+  window.updateApp = function (id, status) {
+    fetch("/plugins/bounty-collab/applications/" + id, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": (window.init && init.csrfNonce) || ""
+      },
+      body: JSON.stringify({ status: status })
+    }).then(function () { location.reload(); });
+  };
+})();
+</script>
+{% endblock %}

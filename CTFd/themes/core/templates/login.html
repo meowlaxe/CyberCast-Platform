@@ -38,9 +38,22 @@
               </a>
             </div>
 
-            {{ form.submit(class="btn btn-block btn-primary w-100 cc-auth-submit") }}
+            {{ form.submit(class="btn btn-block btn-primary w-100 cc-auth-submit", id="cc-login-submit") }}
             {{ form.nonce() }}
           </form>
+
+          {# 2026-07-15: Set sessionStorage flag so landing.js can show the
+             "Welcome back!" toast after the post-login redirect. #}
+          <script>
+          (function () {
+            var btn = document.getElementById("cc-login-submit");
+            if (btn) {
+              btn.closest("form").addEventListener("submit", function () {
+                sessionStorage.setItem("cc_login_pending", "1");
+              });
+            }
+          })();
+          </script>
         {% endwith %}
 
         {% if integrations.mlc() %}

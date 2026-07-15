@@ -15,60 +15,40 @@
 
       <div class="col-md-3 offset-md-1 mb-3 mb-md-0">
         <div class="nav flex-column nav-pills" role="tablist">
-          <button
-              class="nav-link active" id="settings-profile-tab" data-bs-toggle="pill"
-              data-bs-target="#profile" role="tab"
-          >{% trans %}Profile{% endtrans %}
+          <button class="nav-link active" id="settings-profile-tab" data-bs-toggle="pill"
+              data-bs-target="#profile" role="tab">{% trans %}Profile{% endtrans %}
           </button>
-          <button
-              class="nav-link" id="settings-tokens-tab" data-bs-toggle="pill" data-bs-target="#tokens"
-              role="tab"
-          >{% trans %}Access Tokens{% endtrans %}
+          <button class="nav-link" id="settings-security-tab" data-bs-toggle="pill"
+              data-bs-target="#security" role="tab">{% trans %}Security{% endtrans %}
+          </button>
+          <button class="nav-link" id="settings-tokens-tab" data-bs-toggle="pill"
+              data-bs-target="#tokens" role="tab">{% trans %}Access Tokens{% endtrans %}
+          </button>
+          <button class="nav-link" id="settings-wallet-tab" data-bs-toggle="pill"
+              data-bs-target="#bntc-wallet" role="tab">Wallet
+          </button>
+          <button class="nav-link" id="settings-role-tab" data-bs-toggle="pill"
+              data-bs-target="#bntc-role" role="tab">Role
           </button>
         </div>
       </div>
 
       <div class="col-md-8">
         <div class="tab-content" id="v-pills-tabContent">
+          {# ── Profile tab: personal info only ── #}
           <div class="tab-pane fade show active" id="profile" role="tabpanel">
             {% include "components/errors.html" %}
-
             {% with form = Forms.self.SettingsForm(language=language, country=country) %}
-              <form
-                  method="post" accept-charset="utf-8" autocomplete="off" role="form"
-                  x-data="SettingsForm"
-                  @submit.prevent="updateProfile()"
-                  class="form-horizontal"
-              >
-
+              <form method="post" accept-charset="utf-8" autocomplete="off" role="form"
+                  x-data="SettingsForm" @submit.prevent="updateProfile()" class="form-horizontal">
                 <div class="mb-3">
                   <b>{{ form.name.label(class="form-label") }}</b>
                   {{ form.name(class="form-control", value=name) }}
                 </div>
-
                 <div class="mb-3">
                   <b>{{ form.email.label(class="form-label") }}</b>
                   {{ form.email(class="form-control", value=email) }}
                 </div>
-
-                <div class="mb-3">
-                  <b>{{ form.language.label(class="form-label") }}</b>
-                  {{ form.language(class="form-select", value=language) }}
-                </div>
-
-                <hr>
-
-                <div class="mb-3">
-                  <b>{{ form.confirm.label(class="form-label") }}</b>
-                  {{ form.confirm(class="form-control") }}
-                </div>
-                <div class="mb-3">
-                  <b>{{ form.password.label(class="form-label") }}</b>
-                  {{ form.password(class="form-control") }}
-                </div>
-
-                <hr>
-
                 <div class="mb-3">
                   <b>{{ form.affiliation.label(class="form-label") }}</b>
                   {{ form.affiliation(class="form-control", value=affiliation or "") }}
@@ -81,38 +61,63 @@
                   <b>{{ form.country.label(class="form-label") }}</b>
                   {{ form.country(class="form-select", value=country) }}
                 </div>
-
-                <hr>
-
+                <div class="mb-3">
+                  <b>{{ form.language.label(class="form-label") }}</b>
+                  {{ form.language(class="form-select", value=language) }}
+                </div>
                 {{ render_extra_fields(form.extra) }}
-
                 <div id="results" class="mb-3">
-                  <div
-                      class="alert alert-success alert-dismissible submit-row" role="alert"
-                      x-cloak="success" x-show="success"
-                  >
+                  <div class="alert alert-success alert-dismissible submit-row" role="alert"
+                      x-cloak="success" x-show="success">
                     <strong>Success!</strong>
                     {% trans %}Your profile has been updated{% endtrans %}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
-
-
                   <template x-for="(msg, idx) in errors" :key="idx">
                     <div class="alert alert-danger alert-dismissible" role="alert">
                       <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
                       <span x-text="msg"></span>
-                      <button
-                          type="button" class="btn-close" data-bs-dismiss="alert"
-                          aria-label="Close"
-                      >
-                      </button>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                   </template>
                 </div>
-
                 <div class="mb-3">
                   {{ form.submit(class="btn btn-primary float-end px-4") }}
+                </div>
+              </form>
+            {% endwith %}
+          </div>
+
+          {# ── Security tab: password change only ── #}
+          <div class="tab-pane fade" id="security" role="tabpanel">
+            {% with form = Forms.self.SettingsForm(language=language, country=country) %}
+              <form method="post" accept-charset="utf-8" autocomplete="off" role="form"
+                  x-data="SettingsForm" @submit.prevent="updateProfile()" class="form-horizontal">
+                <p class="text-muted small mb-4">Leave blank to keep your current password.</p>
+                <div class="mb-3">
+                  <b>{{ form.confirm.label(class="form-label") }}</b>
+                  {{ form.confirm(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                  <b>{{ form.password.label(class="form-label") }}</b>
+                  {{ form.password(class="form-control") }}
+                </div>
+                <div id="security-results" class="mb-3">
+                  <div class="alert alert-success alert-dismissible submit-row" role="alert"
+                      x-cloak="success" x-show="success">
+                    <strong>Success!</strong>
+                    {% trans %}Your profile has been updated{% endtrans %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                  <template x-for="(msg, idx) in errors" :key="idx">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                      <span x-text="msg"></span>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  </template>
+                </div>
+                <div class="mb-3">
+                  {{ form.submit(class="btn btn-primary float-end px-4", value="Update Password") }}
                 </div>
               </form>
             {% endwith %}
@@ -255,10 +260,436 @@
             {% endif %}
 
           </div>
+
+          {# ── Bounty Role tab ── #}
+          <div class="tab-pane fade" id="bntc-role" role="tabpanel">
+            <div id="bntc-role-loading" class="text-center py-4 text-muted" style="font-size:.85rem;">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading profile...
+            </div>
+            <div id="bntc-role-content" style="display:none;"></div>
+          </div>
+
+          {# ── Wallet tab ── #}
+          <div class="tab-pane fade" id="bntc-wallet" role="tabpanel">
+
+            {# Balance card #}
+            <div class="card border-0 mb-4" id="bntc-balance-card"
+                 style="background:linear-gradient(135deg,#1a2e22,#0d1f19); border-left:4px solid #00c896 !important; border-radius:12px;">
+              <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="text-muted" style="font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Available Balance</div>
+                    <div id="bntc-balance-amt" style="font-size:2rem; font-weight:700; color:#00c896;">—</div>
+                    <div id="bntc-pending-amt" class="text-muted" style="font-size:.78rem; display:none;">
+                      <i class="fas fa-hourglass-half me-1"></i><span></span> pending
+                    </div>
+                  </div>
+                  <div class="d-flex flex-column gap-2 align-items-end">
+                    <div style="width:52px; height:52px; background:#00c89622; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                      <i class="fas fa-coins" style="font-size:1.4rem; color:#00c896;"></i>
+                    </div>
+                    <button id="bntc-withdraw-btn" class="btn btn-success btn-sm px-3" data-bs-toggle="modal" data-bs-target="#bntcWithdrawModal" style="display:none; border-radius:8px; font-size:.8rem;">
+                      <i class="fas fa-arrow-up me-1"></i>Withdraw
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {# No wallet yet #}
+            <div id="bntc-no-wallet" style="display:none; text-align:center; padding:32px 0; color:#555;">
+              <i class="fas fa-wallet" style="font-size:2rem; margin-bottom:8px;"></i>
+              <p class="mb-0" style="font-size:.85rem;">No wallet yet. It will be created when your first payout is released.</p>
+            </div>
+
+            {# Transactions #}
+            <div id="bntc-tx-section" style="display:none;">
+              <h6 class="text-muted mb-2" style="font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;">
+                <i class="fas fa-list me-1"></i>Recent Transactions
+              </h6>
+              <div class="table-responsive" style="border-radius:10px; overflow:hidden; background:#1a1f2e;">
+                <table class="table mb-0" style="color:#ccc; font-size:.83rem;">
+                  <thead>
+                    <tr style="border-color:#ffffff11; color:#666; font-size:.68rem; text-transform:uppercase;">
+                      <th style="border-color:#ffffff11; padding:10px 14px;">Date</th>
+                      <th style="border-color:#ffffff11; padding:10px 14px;">Type</th>
+                      <th style="border-color:#ffffff11; padding:10px 14px; text-align:right;">Amount</th>
+                      <th style="border-color:#ffffff11; padding:10px 14px; text-align:right;">Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bntc-tx-body"></tbody>
+                </table>
+              </div>
+              <div class="mt-2 text-end">
+                <a href="/plugins/bounty-collab/wallet/view" style="font-size:.75rem; color:#4f9eff;">View full wallet →</a>
+              </div>
+            </div>
+
+            {# Loading state #}
+            <div id="bntc-wallet-loading" class="text-center py-4 text-muted" style="font-size:.85rem;">
+              <i class="fas fa-spinner fa-spin me-1"></i> Loading wallet...
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
   </div>
+
+{# ── Withdraw modal (injected into settings page) ── #}
+<div class="modal fade" id="bntcWithdrawModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+    <div class="modal-content border-0" style="background:#131824; color:#fff; border-radius:16px; overflow:hidden;">
+      <div class="modal-header border-0" style="background:#1a1f2e; padding:20px 24px 16px;">
+        <div>
+          <h5 class="modal-title mb-0" style="font-weight:700;">
+            <i class="fas fa-arrow-circle-up me-2" style="color:#00c896;"></i>Withdraw Funds
+          </h5>
+          <div class="text-muted" style="font-size:.78rem; margin-top:2px;">
+            Available: <span id="bntcWdAvail" style="color:#00c896; font-weight:600;">$0.00</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:20px 24px;">
+        <div id="bntcWdSuccess" class="alert mb-3" style="display:none; background:#00c89622; border:1px solid #00c89666; color:#00c896; border-radius:10px;">
+          <i class="fas fa-check-circle me-2"></i><strong>Request submitted!</strong> Admin will process it shortly.
+        </div>
+        <div id="bntcWdError" class="alert mb-3" style="display:none; background:#dc354522; border:1px solid #dc354566; color:#ff6b6b; border-radius:10px;"></div>
+
+        <div class="mb-4">
+          <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;">Withdrawal Amount</label>
+          <div class="input-group" style="background:#0d1117; border:1px solid #333; border-radius:10px; overflow:hidden;">
+            <span class="input-group-text border-0" style="background:transparent; color:#00c896; font-weight:700; font-size:1.1rem; padding-left:14px;">$</span>
+            <input type="number" id="bntcWdAmount" class="form-control border-0" min="1" step="0.01" placeholder="0.00"
+                   style="background:transparent; color:#fff; font-size:1.1rem; font-weight:600; box-shadow:none;">
+            <button type="button" class="btn border-0 px-3" id="bntcWdMax"
+                    style="background:transparent; color:#4f9eff; font-size:.75rem; font-weight:600;">MAX</button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;">Payment Method</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            {% for mval, micon, mlabel in [('bank','fa-university','Bank Transfer'),('paypal','fa-paypal','PayPal')] %}
+            <label class="bntc-wd-card" data-method="{{ mval }}"
+                   style="display:flex; align-items:center; gap:10px; padding:11px 13px; border-radius:10px; cursor:pointer; border:1.5px solid #2a2f3e; background:#1a1f2e; transition:all .15s; user-select:none;">
+              <input type="radio" name="bntcWdMethod" value="{{ mval }}" style="display:none;" {% if loop.first %}checked{% endif %}>
+              <i class="fas {{ micon }}" style="width:16px; text-align:center; color:#4f9eff;"></i>
+              <span style="font-size:.8rem; font-weight:500;">{{ mlabel }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div id="bntcWdFields">
+          <div id="bntcFields-bank">
+            <div class="mb-2"><label class="bntc-lbl">Bank Name <span style="color:#dc3545">*</span></label><input type="text" id="bntcBankName" class="form-control bntc-inp" placeholder="e.g. Maybank, CIMB, RHB"></div>
+            <div class="mb-2"><label class="bntc-lbl">Account Number <span style="color:#dc3545">*</span></label><input type="text" id="bntcAccNum" class="form-control bntc-inp" placeholder="e.g. 1234567890"></div>
+            <div class="mb-2"><label class="bntc-lbl">Account Holder Name <span style="color:#dc3545">*</span></label><input type="text" id="bntcAccName" class="form-control bntc-inp" placeholder="Full name as registered with bank"></div>
+          </div>
+          <div id="bntcFields-paypal" style="display:none;">
+            <div class="mb-2"><label class="bntc-lbl">PayPal Email <span style="color:#dc3545">*</span></label><input type="email" id="bntcPaypalEmail" class="form-control bntc-inp" placeholder="you@example.com"></div>
+            <div class="mb-2"><label class="bntc-lbl">Full Name</label><input type="text" id="bntcPaypalName" class="form-control bntc-inp" placeholder="Name on PayPal account"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0" style="padding:0 24px 20px; background:#131824;">
+        <button type="button" class="btn btn-sm px-4" data-bs-dismiss="modal" style="background:#2a2f3e; color:#aaa; border-radius:8px;">Cancel</button>
+        <button type="button" id="bntcWdSubmit" class="btn btn-success btn-sm px-4" style="border-radius:8px; font-weight:600;">
+          <i class="fas fa-paper-plane me-1"></i>Submit Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bntc-inp { background:#0d1117!important; border:1px solid #2a2f3e!important; border-radius:8px!important; color:#fff!important; font-size:.86rem; }
+.bntc-inp:focus { border-color:#00c896!important; box-shadow:0 0 0 2px #00c89622!important; }
+.bntc-inp::placeholder { color:#555!important; }
+.bntc-lbl { color:#aaa; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600; margin-bottom:4px; display:block; }
+.bntc-wd-card.active { border-color:#00c896!important; background:#00c89611!important; }
+.bntc-wd-card.active i, .bntc-wd-card.active span { color:#00c896!important; }
+</style>
+
+<script>
+(function() {
+  var CSRF = (window.init && window.init.csrfNonce) || "";
+  var walletCents = 0;
+  var bntcMethod = "bank";
+
+  // ── Role tab ──
+  var roleLoaded = false;
+  document.getElementById("settings-role-tab") && document.getElementById("settings-role-tab").addEventListener("click", function() {
+    if (roleLoaded) return;
+    roleLoaded = true;
+    fetch("/plugins/bounty-collab/me/profile", { credentials: "same-origin" })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      document.getElementById("bntc-role-loading").style.display = "none";
+      if (!d) return;
+      var el = document.getElementById("bntc-role-content");
+      el.style.display = "block";
+      el.innerHTML = renderRoleProfile(d);
+    })
+    .catch(function() {
+      document.getElementById("bntc-role-loading").textContent = "Unable to load profile.";
+    });
+  });
+
+  var ROLE_META = {
+    admin:   { icon:"fa-shield-alt",   color:"#ff6b6b",  label:"Platform Admin",     bg:"#ff6b6b22" },
+    partner: { icon:"fa-building",     color:"#ffc107",  label:"Company Partner",    bg:"#ffc10722" },
+    expert:  { icon:"fa-microscope",   color:"#4f9eff",  label:"University Expert",  bg:"#4f9eff22" },
+    student: { icon:"fa-graduation-cap", color:"#aaa",   label:"Student",            bg:"#aaaaaa22" },
+  };
+
+  var ROLE_PERMS = {
+    admin: [
+      { ok:true,  text:"Full platform access — all projects, all users" },
+      { ok:true,  text:"Post, manage & approve bounty projects" },
+      { ok:true,  text:"Resolve disputes and release payouts" },
+      { ok:true,  text:"Apply to projects & submit deliverables" },
+    ],
+    partner: [
+      { ok:true,  text:"Post bounty research projects" },
+      { ok:true,  text:"Review applicants & lock research teams" },
+      { ok:true,  text:"Approve / request revision on deliverables" },
+      { ok:true,  text:"Release payouts to the research team" },
+      { ok:false, text:"Cannot apply to bounty projects" },
+    ],
+    expert: [
+      { ok:true,  text:"Browse open research bounty projects" },
+      { ok:true,  text:"Apply with credentials & cover note" },
+      { ok:true,  text:"Submit deliverables for partner review" },
+      { ok:true,  text:"Earn payouts to your wallet" },
+      { ok:false, text:"Cannot post or manage projects" },
+    ],
+    student: [
+      { ok:true,  text:"Access CTF challenges and learning content" },
+      { ok:true,  text:"View Leaderboard & Community" },
+      { ok:false, text:"No access to bounty projects" },
+      { ok:false, text:"Cannot apply or post projects" },
+    ],
+  };
+
+  function renderRoleProfile(d) {
+    var role = d.role || "student";
+    var m = ROLE_META[role] || ROLE_META.student;
+    var perms = ROLE_PERMS[role] || [];
+    var permHtml = perms.map(function(p) {
+      return '<li style="margin-bottom:5px;">'
+        + '<i class="fas ' + (p.ok ? 'fa-check-circle' : 'fa-times-circle') + ' me-2" style="color:' + (p.ok ? '#00c896' : '#555') + ';"></i>'
+        + '<span style="color:' + (p.ok ? '#ccc' : '#666') + ';">' + p.text + '</span>'
+        + '</li>';
+    }).join("");
+
+    // Credential details block (varies by role)
+    var credHtml = "";
+    if (role === "expert" && (d.institution || d.expertise_areas)) {
+      credHtml = '<div class="card border-0 mt-4" style="background:#0d1117; border-radius:12px;">'
+        + '<div class="card-body py-3 px-4">'
+        + '<div class="mb-1" style="font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:#666; font-weight:600;">Credential Details</div>'
+        + (d.institution ? row("University / Institution", d.institution) : "")
+        + (d.credential_id ? row("Staff / Student ID", d.credential_id) : "")
+        + (d.expertise_areas ? row("Expertise Areas", '<span style="color:#4f9eff;">' + d.expertise_areas + '</span>') : "")
+        + (d.bio ? row("Bio", '<span style="white-space:pre-line;">' + esc(d.bio) + '</span>') : "")
+        + (d.profile_url ? row("Profile Link", '<a href="' + esc(d.profile_url) + '" target="_blank" style="color:#4f9eff;">' + esc(d.profile_url) + '</a>') : "")
+        + '</div></div>';
+    } else if (role === "partner" && d.institution) {
+      credHtml = '<div class="card border-0 mt-4" style="background:#0d1117; border-radius:12px;">'
+        + '<div class="card-body py-3 px-4">'
+        + '<div class="mb-1" style="font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:#666; font-weight:600;">Company Details</div>'
+        + row("Company Name", d.institution)
+        + '</div></div>';
+    }
+
+    var editBtn = (role !== "admin")
+      ? '<div class="mt-4"><a href="/plugins/bounty-collab/setup-role" class="btn btn-sm px-4" style="background:#1a1f2e; border:1px solid #333; color:#aaa; border-radius:8px; font-size:.82rem;"><i class="fas fa-pen me-1"></i>Edit Profile</a></div>'
+      : "";
+
+    return '<div class="d-flex align-items-center gap-3 mb-4">'
+      + '<div style="width:56px; height:56px; background:' + m.bg + '; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">'
+      + '<i class="fas ' + m.icon + '" style="font-size:1.5rem; color:' + m.color + ';"></i></div>'
+      + '<div><div class="fw-bold" style="font-size:1.1rem; color:#fff;">' + m.label + '</div>'
+      + '<div><span class="badge" style="background:' + m.bg + '; color:' + m.color + '; font-size:.72rem; border-radius:6px;">' + role.toUpperCase() + '</span></div>'
+      + '</div></div>'
+      + '<div class="card border-0" style="background:#0d1117; border-radius:12px;">'
+      + '<div class="card-body py-3 px-4">'
+      + '<div class="mb-2" style="font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:#666; font-weight:600;">Permissions</div>'
+      + '<ul class="list-unstyled mb-0" style="font-size:.85rem;">' + permHtml + '</ul>'
+      + '</div></div>'
+      + credHtml
+      + editBtn;
+  }
+
+  function row(label, val) {
+    return '<div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #1a1f2e;">'
+      + '<span style="color:#666; font-size:.82rem; min-width:140px;">' + label + '</span>'
+      + '<span style="color:#ccc; font-size:.82rem; text-align:right; flex:1;">' + val + '</span>'
+      + '</div>';
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // Load wallet data when tab is clicked
+  document.getElementById("settings-wallet-tab") && document.getElementById("settings-wallet-tab").addEventListener("click", loadWallet);
+  // Also try the generated id
+  document.querySelector('[data-bs-target="#bntc-wallet"]') && document.querySelector('[data-bs-target="#bntc-wallet"]').addEventListener("click", loadWallet);
+
+  var walletLoaded = false;
+  function loadWallet() {
+    if (walletLoaded) return;
+    walletLoaded = true;
+
+    Promise.all([
+      fetch("/plugins/bounty-collab/wallet", { credentials: "same-origin" }).then(function(r) { return r.ok ? r.json() : null; }),
+      fetch("/plugins/bounty-collab/wallet/transactions", { credentials: "same-origin" }).then(function(r) { return r.ok ? r.json() : []; })
+    ]).then(function(res) {
+      var wallet = res[0], txns = res[1] || [];
+      document.getElementById("bntc-wallet-loading").style.display = "none";
+
+      if (!wallet || (wallet.internal_balance === 0 && wallet.pending_balance === 0 && txns.length === 0)) {
+        document.getElementById("bntc-no-wallet").style.display = "block";
+        return;
+      }
+
+      walletCents = wallet.internal_balance || 0;
+      var balUsd = (walletCents / 100).toFixed(2);
+      document.getElementById("bntc-balance-amt").textContent = "$" + balUsd;
+      document.getElementById("bntcWdAvail").textContent = "$" + balUsd;
+
+      if (wallet.pending_balance > 0) {
+        var pendEl = document.getElementById("bntc-pending-amt");
+        pendEl.style.display = "block";
+        pendEl.querySelector("span").textContent = "$" + (wallet.pending_balance / 100).toFixed(2);
+      }
+
+      if (walletCents > 0) {
+        document.getElementById("bntc-withdraw-btn").style.display = "inline-block";
+        document.getElementById("bntcWdMax").onclick = function() {
+          document.getElementById("bntcWdAmount").value = (walletCents / 100).toFixed(2);
+        };
+      }
+
+      if (txns.length > 0) {
+        document.getElementById("bntc-tx-section").style.display = "block";
+        var tbody = document.getElementById("bntc-tx-body");
+        var typeMap = {
+          payout_released:     { label:"Payout",     bg:"#00c89622", color:"#00c896" },
+          withdrawal_requested:{ label:"Withdrawal",  bg:"#8b5cf622", color:"#8b5cf6" },
+          refund:              { label:"Refund",      bg:"#ffc10722", color:"#ffc107" },
+          escrow_funded:       { label:"Escrow",      bg:"#4f9eff22", color:"#4f9eff" },
+          commission_deducted: { label:"Commission",  bg:"#dc354522", color:"#ff6b6b" },
+        };
+        var creditTypes = ["payout_released", "refund"];
+        var debitTypes  = ["withdrawal_requested"];
+        txns.slice(0, 10).forEach(function(tx) {
+          var tm = typeMap[tx.type] || { label: tx.type.replace(/_/g," "), bg:"#33333322", color:"#aaa" };
+          var date = tx.created_at ? new Date(tx.created_at).toLocaleDateString("en-GB", {day:"2-digit", month:"short"}) : "—";
+          var sign = creditTypes.includes(tx.type) ? "+" : (debitTypes.includes(tx.type) ? "-" : "");
+          var amtColor = creditTypes.includes(tx.type) ? "#00c896" : (debitTypes.includes(tx.type) ? "#ff6b6b" : "#888");
+          var tr = document.createElement("tr");
+          tr.style.cssText = "border-color:#ffffff11;";
+          tr.innerHTML = [
+            '<td style="border-color:#ffffff11; padding:9px 14px; color:#888; white-space:nowrap;">' + date + '</td>',
+            '<td style="border-color:#ffffff11; padding:9px 14px;"><span style="background:' + tm.bg + '; color:' + tm.color + '; border-radius:4px; padding:2px 7px; font-size:.68rem; font-weight:600;">' + tm.label + '</span></td>',
+            '<td style="border-color:#ffffff11; padding:9px 14px; text-align:right; color:' + amtColor + '; font-weight:600;">' + sign + '$' + (tx.amount / 100).toFixed(2) + '</td>',
+            '<td style="border-color:#ffffff11; padding:9px 14px; text-align:right; color:#aaa;">$' + (tx.balance_after / 100).toFixed(2) + '</td>'
+          ].join("");
+          tbody.appendChild(tr);
+        });
+      }
+    }).catch(function() {
+      document.getElementById("bntc-wallet-loading").textContent = "Unable to load wallet.";
+    });
+  }
+
+  // Method card switching (settings modal)
+  document.querySelectorAll(".bntc-wd-card").forEach(function(card) {
+    card.addEventListener("click", function() {
+      document.querySelectorAll(".bntc-wd-card").forEach(function(c) { c.classList.remove("active"); });
+      card.classList.add("active");
+      card.querySelector("input[type=radio]").checked = true;
+      bntcMethod = card.dataset.method;
+      ["bank","paypal"].forEach(function(m) {
+        var el = document.getElementById("bntcFields-" + m);
+        if (el) el.style.display = m === bntcMethod ? "block" : "none";
+      });
+    });
+  });
+  var firstCard = document.querySelector(".bntc-wd-card");
+  if (firstCard) firstCard.classList.add("active");
+
+  function buildBntcDetails() {
+    if (bntcMethod === "bank") {
+      var bn = (document.getElementById("bntcBankName").value || "").trim();
+      var an = (document.getElementById("bntcAccNum").value || "").trim();
+      var nm = (document.getElementById("bntcAccName").value || "").trim();
+      if (!bn || !an || !nm) return null;
+      return "Bank: " + bn + " | Acc: " + an + " | Name: " + nm;
+    }
+    if (bntcMethod === "paypal") {
+      var em = (document.getElementById("bntcPaypalEmail").value || "").trim();
+      var pn = (document.getElementById("bntcPaypalName").value || "").trim();
+      if (!em) return null;
+      return "PayPal: " + em + (pn ? " | Name: " + pn : "");
+    }
+    return null;
+  }
+
+  var submitBtn = document.getElementById("bntcWdSubmit");
+  if (submitBtn) submitBtn.addEventListener("click", function() {
+    var errDiv = document.getElementById("bntcWdError");
+    var okDiv  = document.getElementById("bntcWdSuccess");
+    errDiv.style.display = "none";
+    okDiv.style.display  = "none";
+
+    var amtUsd   = parseFloat(document.getElementById("bntcWdAmount").value || 0);
+    var amtCents = Math.round(amtUsd * 100);
+    var details  = buildBntcDetails();
+
+    if (!amtUsd || amtCents <= 0) { errDiv.textContent = "Please enter an amount."; errDiv.style.display = "block"; return; }
+    if (amtCents > walletCents)   { errDiv.textContent = "Amount exceeds your available balance."; errDiv.style.display = "block"; return; }
+    if (!details) { errDiv.textContent = "Please fill in all required payment details."; errDiv.style.display = "block"; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+
+    fetch("/plugins/bounty-collab/wallet/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "CSRF-Token": CSRF },
+      body: JSON.stringify({ amount_cents: amtCents, method: bntcMethod, details: details })
+    })
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(result) {
+      if (result.ok) {
+        okDiv.style.display = "block";
+        submitBtn.style.display = "none";
+        walletCents -= amtCents;
+        document.getElementById("bntc-balance-amt").textContent = "$" + (walletCents / 100).toFixed(2);
+        document.getElementById("bntcWdAvail").textContent = "$" + (walletCents / 100).toFixed(2);
+        if (walletCents <= 0) document.getElementById("bntc-withdraw-btn").style.display = "none";
+      } else {
+        errDiv.textContent = result.data.error || "Request failed. Please try again.";
+        errDiv.style.display = "block";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+      }
+    })
+    .catch(function() {
+      errDiv.textContent = "Network error — please try again.";
+      errDiv.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+    });
+  });
+})();
+</script>
 {% endblock %}
 
 {% block scripts %}

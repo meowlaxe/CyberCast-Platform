@@ -1,0 +1,355 @@
+{# =============================================================================
+   File: CTFd/plugins/ctfd_bounty_collab/templates/bounty_collab/wallet.html
+   Modified: 2026-07-15 — Dark theme, USD display (converts from cents),
+             Bootstrap 5 classes, full transaction history.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:700px;">
+
+  <a href="{{ url_for('bounty_collab.project_list_view') }}"
+     class="text-muted small mb-3 d-inline-block">
+    ← Back to Projects
+  </a>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-white mb-0">
+      <i class="fas fa-wallet me-2" style="color:#00c896;"></i>My Wallet
+    </h2>
+    {% if wallet and wallet.internal_balance > 0 %}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+      <i class="fas fa-arrow-up me-2"></i>Withdraw
+    </button>
+    {% endif %}
+  </div>
+
+  {# ── Balance card ── #}
+  {% set balance_usd = wallet.internal_balance / 100 if wallet else 0 %}
+  {% set pending_usd = wallet.pending_balance / 100 if wallet else 0 %}
+  <div class="card border-0 mb-4" style="background:linear-gradient(135deg,#1a2e22,#0d1f19); border-left:4px solid #00c896 !important;">
+    <div class="card-body py-4">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="text-muted small mb-1">Available Balance</div>
+          <div style="font-size:2.4rem; font-weight:700; color:#00c896;">
+            ${{ "%.2f"|format(balance_usd) }}
+          </div>
+          {% if pending_usd > 0 %}
+          <div class="text-muted small mt-1">
+            <i class="fas fa-hourglass-half me-1"></i>
+            ${{ "%.2f"|format(pending_usd) }} pending
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-auto">
+          <div style="width:64px; height:64px; background:#00c89622; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-coins" style="font-size:1.8rem; color:#00c896;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── No wallet yet ── #}
+  {% if not wallet %}
+  <div class="card border-0 mb-4" style="background:#1a1f2e;">
+    <div class="card-body text-center py-5">
+      <div style="font-size:2.5rem; color:#333; margin-bottom:.75rem;"><i class="fas fa-wallet"></i></div>
+      <p class="text-muted mb-0">No wallet yet.</p>
+      <p class="text-muted" style="font-size:.8rem;">
+        Your wallet is created automatically when your first payout is released.
+      </p>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Transaction history ── #}
+  <div class="card border-0" style="background:#1a1f2e;">
+    <div class="card-body">
+      <h5 class="text-white mb-3">
+        <i class="fas fa-list me-2" style="color:#4f9eff;"></i>Transaction History
+      </h5>
+
+      {% if transactions %}
+      <div class="table-responsive">
+        <table class="table mb-0" style="color:#ccc; font-size:.85rem;">
+          <thead>
+            <tr style="border-color:#ffffff11; color:#888; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;">
+              <th style="border-color:#ffffff11;">Date</th>
+              <th style="border-color:#ffffff11;">Description</th>
+              <th style="border-color:#ffffff11; text-align:right;">Amount</th>
+              <th style="border-color:#ffffff11; text-align:right;">Balance After</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr style="border-color:#ffffff11;">
+              <td style="border-color:#ffffff11; white-space:nowrap; color:#888;">
+                {{ tx.created_at.strftime('%d %b %Y') if tx.created_at else '—' }}
+              </td>
+              <td style="border-color:#ffffff11;">
+                {% if tx.type == 'payout_released' %}
+                <span class="badge" style="background:#00c89622; color:#00c896; font-size:.65rem;">Payout</span>
+                {% elif tx.type == 'withdrawal_requested' %}
+                <span class="badge" style="background:#8b5cf622; color:#8b5cf6; font-size:.65rem;">Withdrawal</span>
+                {% elif tx.type == 'escrow_funded' %}
+                <span class="badge" style="background:#4f9eff22; color:#4f9eff; font-size:.65rem;">Escrow</span>
+                {% elif tx.type == 'refund' %}
+                <span class="badge" style="background:#ffc10722; color:#ffc107; font-size:.65rem;">Refund</span>
+                {% elif tx.type == 'commission_deducted' %}
+                <span class="badge" style="background:#dc354522; color:#ff6b6b; font-size:.65rem;">Commission</span>
+                {% else %}
+                <span class="badge bg-secondary" style="font-size:.65rem;">{{ tx.type | replace('_',' ') | title }}</span>
+                {% endif %}
+                {% if tx.project_id %}
+                <span class="text-muted ms-1" style="font-size:.78rem;">Project #{{ tx.project_id }}</span>
+                {% endif %}
+              </td>
+              <td style="border-color:#ffffff11; text-align:right;">
+                {% if tx.type in ['payout_released', 'refund'] %}
+                <span style="color:#00c896; font-weight:600;">+${{ "%.2f"|format(tx.amount / 100) }}</span>
+                {% elif tx.type == 'withdrawal_requested' %}
+                <span style="color:#ff6b6b; font-weight:600;">-${{ "%.2f"|format(tx.amount / 100) }}</span>
+                {% else %}
+                <span style="color:#888;">${{ "%.2f"|format(tx.amount / 100) }}</span>
+                {% endif %}
+              </td>
+              <td style="border-color:#ffffff11; text-align:right; color:#aaa;">
+                ${{ "%.2f"|format(tx.balance_after / 100) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <div style="font-size:2.5rem; color:#333; margin-bottom:.75rem;">
+          <i class="fas fa-receipt"></i>
+        </div>
+        <p class="text-muted small mb-0">No transactions yet.</p>
+        <p class="text-muted" style="font-size:.78rem;">
+          Payouts will appear here once a project you worked on is approved.
+        </p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="mt-4 text-muted" style="font-size:.78rem;">
+    <i class="fas fa-info-circle me-1"></i>
+    Wallet balances are held in the CyberCast platform. Use Withdraw to request an external payout.
+  </div>
+
+</div>
+
+{# ── Withdraw modal ── #}
+{% if wallet and wallet.internal_balance > 0 %}
+{% set balance_usd = wallet.internal_balance / 100 %}
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+    <div class="modal-content border-0" style="background:#131824; color:#fff; border-radius:16px; overflow:hidden;">
+
+      {# Header #}
+      <div class="modal-header border-0" style="background:#1a1f2e; padding:20px 24px 16px;">
+        <div>
+          <h5 class="modal-title mb-0" style="font-weight:700;">
+            <i class="fas fa-arrow-circle-up me-2" style="color:#00c896;"></i>Withdraw Funds
+          </h5>
+          <div class="text-muted" style="font-size:.78rem; margin-top:2px;">
+            Available: <span style="color:#00c896; font-weight:600;">${{ "%.2f"|format(balance_usd) }}</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" style="padding:20px 24px;">
+
+        <div id="wdSuccess" class="alert mb-3" style="display:none; background:#00c89622; border:1px solid #00c89666; color:#00c896; border-radius:10px;">
+          <i class="fas fa-check-circle me-2"></i><strong>Request submitted!</strong> The platform admin will process your withdrawal shortly.
+        </div>
+        <div id="wdError" class="alert mb-3" style="display:none; background:#dc354522; border:1px solid #dc354566; color:#ff6b6b; border-radius:10px;"></div>
+
+        {# Amount #}
+        <div class="mb-4">
+          <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;">Withdrawal Amount</label>
+          <div class="input-group" style="background:#0d1117; border:1px solid #333; border-radius:10px; overflow:hidden;">
+            <span class="input-group-text border-0" style="background:transparent; color:#00c896; font-weight:700; font-size:1.1rem; padding-left:14px;">$</span>
+            <input type="number" id="wdAmount" class="form-control border-0" min="1"
+                   max="{{ "%.2f"|format(balance_usd) }}" step="0.01"
+                   placeholder="0.00"
+                   style="background:transparent; color:#fff; font-size:1.1rem; font-weight:600; box-shadow:none;">
+            <button type="button" class="btn border-0 px-3" onclick="document.getElementById('wdAmount').value='{{ "%.2f"|format(balance_usd) }}'"
+                    style="background:transparent; color:#4f9eff; font-size:.75rem; font-weight:600;">MAX</button>
+          </div>
+        </div>
+
+        {# Payment method cards #}
+        <div class="mb-3">
+          <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:600;">Payment Method</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            {% for val, icon, label in [('bank','fa-university','Bank Transfer'),('paypal','fa-paypal','PayPal')] %}
+            <label class="wd-method-card" data-method="{{ val }}"
+                   style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:10px; cursor:pointer; border:1.5px solid #2a2f3e; background:#1a1f2e; transition:all .15s; user-select:none;">
+              <input type="radio" name="wdMethod" value="{{ val }}" style="display:none;" {% if loop.first %}checked{% endif %}>
+              <i class="fas {{ icon }}" style="font-size:1rem; width:18px; text-align:center; color:#4f9eff;"></i>
+              <span style="font-size:.82rem; font-weight:500;">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        {# Dynamic fields per method #}
+        <div id="wdFields">
+          <div id="fields-bank" class="wd-field-group">
+            <div class="mb-2">
+              <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600;">Bank Name <span style="color:#dc3545;">*</span></label>
+              <input type="text" id="wdBankName" class="form-control wd-input" placeholder="e.g. Maybank, CIMB, RHB">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600;">Account Number <span style="color:#dc3545;">*</span></label>
+              <input type="text" id="wdAccNum" class="form-control wd-input" placeholder="e.g. 1234567890">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600;">Account Holder Name <span style="color:#dc3545;">*</span></label>
+              <input type="text" id="wdAccName" class="form-control wd-input" placeholder="Full name as registered with bank">
+            </div>
+          </div>
+          <div id="fields-paypal" class="wd-field-group" style="display:none;">
+            <div class="mb-2">
+              <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600;">PayPal Email <span style="color:#dc3545;">*</span></label>
+              <input type="email" id="wdPaypalEmail" class="form-control wd-input" placeholder="you@example.com">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" style="color:#aaa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600;">Full Name</label>
+              <input type="text" id="wdPaypalName" class="form-control wd-input" placeholder="Name on PayPal account">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer border-0" style="padding:0 24px 20px; background:#131824;">
+        <button type="button" class="btn btn-sm px-4" data-bs-dismiss="modal"
+                style="background:#2a2f3e; color:#aaa; border-radius:8px;">Cancel</button>
+        <button type="button" id="wdSubmitBtn" class="btn btn-success btn-sm px-4"
+                style="border-radius:8px; font-weight:600;">
+          <i class="fas fa-paper-plane me-1"></i>Submit Request
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.wd-input {
+  background: #0d1117 !important;
+  border: 1px solid #2a2f3e !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  font-size: .88rem;
+}
+.wd-input:focus { border-color: #00c896 !important; box-shadow: 0 0 0 2px #00c89622 !important; }
+.wd-input::placeholder { color: #555 !important; }
+.wd-method-card.active { border-color: #00c896 !important; background: #00c89611 !important; }
+.wd-method-card.active i { color: #00c896 !important; }
+.wd-method-card.active span { color: #00c896 !important; }
+</style>
+
+<script>
+(function() {
+  var CSRF = (window.init && window.init.csrfNonce) || "";
+  var maxCents = {{ wallet.internal_balance }};
+  var currentMethod = "bank";
+
+  // Method card switching
+  document.querySelectorAll(".wd-method-card").forEach(function(card) {
+    card.addEventListener("click", function() {
+      document.querySelectorAll(".wd-method-card").forEach(function(c) { c.classList.remove("active"); });
+      card.classList.add("active");
+      card.querySelector("input[type=radio]").checked = true;
+      currentMethod = card.dataset.method;
+      document.querySelectorAll(".wd-field-group").forEach(function(g) { g.style.display = "none"; });
+      var target = document.getElementById("fields-" + currentMethod);
+      if (target) target.style.display = "block";
+    });
+  });
+  // Set first card active
+  var first = document.querySelector(".wd-method-card");
+  if (first) first.classList.add("active");
+
+  function buildDetails() {
+    if (currentMethod === "bank") {
+      var bn   = (document.getElementById("wdBankName").value || "").trim();
+      var an   = (document.getElementById("wdAccNum").value   || "").trim();
+      var nm   = (document.getElementById("wdAccName").value  || "").trim();
+      if (!bn || !an || !nm) return null;
+      return "Bank: " + bn + " | Acc: " + an + " | Name: " + nm;
+    }
+    if (currentMethod === "paypal") {
+      var email = (document.getElementById("wdPaypalEmail").value || "").trim();
+      var pname = (document.getElementById("wdPaypalName").value  || "").trim();
+      if (!email) return null;
+      return "PayPal: " + email + (pname ? " | Name: " + pname : "");
+    }
+    return null;
+  }
+
+  document.getElementById("wdSubmitBtn").addEventListener("click", function() {
+    var errDiv = document.getElementById("wdError");
+    var okDiv  = document.getElementById("wdSuccess");
+    errDiv.style.display = "none";
+    okDiv.style.display  = "none";
+
+    var amtUsd   = parseFloat(document.getElementById("wdAmount").value || 0);
+    var amtCents = Math.round(amtUsd * 100);
+    var details  = buildDetails();
+
+    if (!amtUsd || amtCents <= 0) {
+      errDiv.textContent = "Please enter an amount to withdraw.";
+      errDiv.style.display = "block"; return;
+    }
+    if (amtCents > maxCents) {
+      errDiv.textContent = "Amount exceeds your available balance (${{ "%.2f"|format(balance_usd) }}).";
+      errDiv.style.display = "block"; return;
+    }
+    if (!details) {
+      errDiv.textContent = "Please fill in the required payment details.";
+      errDiv.style.display = "block"; return;
+    }
+
+    var btn = document.getElementById("wdSubmitBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+
+    fetch("/plugins/bounty-collab/wallet/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "CSRF-Token": CSRF },
+      body: JSON.stringify({ amount_cents: amtCents, method: currentMethod, details: details })
+    })
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(result) {
+      if (result.ok) {
+        okDiv.style.display = "block";
+        btn.style.display = "none";
+        setTimeout(function() { location.reload(); }, 2000);
+      } else {
+        errDiv.textContent = result.data.error || "Request failed. Please try again.";
+        errDiv.style.display = "block";
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+      }
+    })
+    .catch(function() {
+      errDiv.textContent = "Network error — please try again.";
+      errDiv.style.display = "block";
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Submit Request';
+    });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

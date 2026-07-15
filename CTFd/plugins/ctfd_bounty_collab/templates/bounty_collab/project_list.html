@@ -1,0 +1,140 @@
+{# =============================================================================
+   File: templates/bounty_collab/project_list.html
+   Modified: 2026-07-15 — Role-aware UI: partners see their projects + Post button;
+             experts see open projects + My Applications; students blocked at route.
+   ============================================================================= #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0">Research Bounty Projects</h2>
+      {% if user_role == 'partner' %}
+      <small class="text-muted">Browse all open projects — your own projects are highlighted</small>
+      {% elif user_role == 'expert' %}
+      <small class="text-muted">Open projects available for application</small>
+      {% else %}
+      <small class="text-muted">All research bounty projects</small>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      {% if user_role == 'expert' %}
+      <a href="{{ url_for('bounty_collab.my_applications_view') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-clipboard-list me-1"></i> My Applications
+      </a>
+      {% endif %}
+      {% if user_role in ['partner', 'admin'] %}
+      <a href="{{ url_for('bounty_collab.project_new_view') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Post Project
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if projects %}
+  <div class="row g-3">
+    {% for p in projects %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{{ url_for('bounty_collab.project_detail_view', project_id=p.id) }}" class="text-decoration-none">
+        <div class="card h-100 border-0" style="background:#1a1f2e; transition: transform .15s; cursor:pointer;"
+             onmouseover="this.style.transform='translateY(-3px)'"
+             onmouseout="this.style.transform='translateY(0)'">
+          <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="d-flex gap-1 flex-wrap">
+                <span class="badge" style="background:#0d6efd22; color:#4f9eff; font-size:.7rem;">
+                  {{ p.category or "General" }}
+                </span>
+                {% if p.owner_id == current_user_id %}
+                <span class="badge" style="background:#ffc10722; color:#ffc107; font-size:.65rem;">
+                  <i class="fas fa-user-edit me-1"></i>Your Project
+                </span>
+                {% endif %}
+              </div>
+              {% if p.status == 'draft' %}
+                <span class="badge bg-secondary">Draft</span>
+              {% elif p.status == 'published' %}
+                <span class="badge bg-success">Open — Apply Now</span>
+              {% elif p.status == 'recruiting' %}
+                <span class="badge bg-warning text-dark">Actively Recruiting</span>
+              {% elif p.status == 'applications_closed' %}
+                <span class="badge bg-info">Reviewing Applications</span>
+              {% elif p.status == 'team_locked' %}
+                <span class="badge bg-primary">Team Selected</span>
+              {% elif p.status == 'in_progress' %}
+                <span class="badge" style="background:#8b5cf6; color:#fff;">In Progress</span>
+              {% elif p.status == 'submitted_for_review' %}
+                <span class="badge bg-warning text-dark">Under Review</span>
+              {% elif p.status in ['approved', 'paid_out', 'closed'] %}
+                <span class="badge bg-secondary">Completed</span>
+              {% elif p.status == 'cancelled' %}
+                <span class="badge bg-danger">Cancelled</span>
+              {% endif %}
+            </div>
+
+            <h5 class="card-title text-white mb-2">{{ p.title }}</h5>
+            <p class="card-text text-muted small mb-3">
+              {{ p.problem_statement | truncate(100) }}
+            </p>
+
+            {% if p.required_expertise %}
+            <div class="mb-3">
+              {% for tag in p.required_expertise.split(',')[:3] %}
+              <span class="badge me-1" style="background:#ffffff11; color:#aaa; font-size:.7rem;">
+                {{ tag.strip() }}
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-2"
+                 style="border-top:1px solid #ffffff11;">
+              <div>
+                <div class="text-white fw-bold">${{ "%.2f"|format(cents_to_usd(p.budget_total)) }}</div>
+                <small class="text-muted">Total Budget</small>
+              </div>
+              <div class="text-end">
+                <div class="text-muted small">
+                  <i class="fas fa-users me-1"></i>{{ p.team_size_min }}–{{ p.team_size_max }} members
+                </div>
+                {% if p.is_nda_required %}
+                <span class="badge mt-1" style="background:#ff980022; color:#ff9800; font-size:.65rem;">NDA Required</span>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+          {% if p.application_deadline %}
+          <div class="card-footer border-0 text-muted small" style="background:#ffffff08;">
+            <i class="fas fa-clock me-1"></i>
+            Deadline: {{ p.application_deadline.strftime('%d %b %Y') }}
+          </div>
+          {% endif %}
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+
+  <div class="text-center py-5" style="color:#666;">
+    <i class="fas fa-search fa-3x mb-3"></i>
+    <h5 class="text-muted">No projects available right now</h5>
+    {% if user_role in ['partner', 'admin'] %}
+    <p class="text-muted small">Be the first to post a research bounty and find university experts.</p>
+    <a href="{{ url_for('bounty_collab.project_new_view') }}" class="btn btn-primary mt-2">
+      <i class="fas fa-plus me-1"></i> Post a Project
+    </a>
+    {% else %}
+    <p class="text-muted small">Check back soon — new research projects are posted regularly.</p>
+    {% endif %}
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}
